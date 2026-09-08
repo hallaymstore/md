@@ -1,0 +1,13 @@
+const router = require('express').Router();
+const c = require('../controllers/user.controller');
+const { requireRole } = require('../middleware/auth');
+const roles = ['superadmin','tech','magistracy','dean','department'];
+router.get('/', requireRole(...roles), c.list);
+router.get('/new', requireRole(...roles), c.newWizard);
+router.post('/', requireRole(...roles), c.create);
+router.get('/:id/edit', requireRole(...roles), c.editForm);
+router.post('/:id/edit', requireRole(...roles), c.update);
+router.post('/:id/toggle', requireRole(...roles), c.toggle);
+router.post('/:id/reset-password', requireRole(...roles), c.resetPassword);
+router.post('/:id/delete', requireRole('superadmin','tech'), c.remove);
+module.exports = router;

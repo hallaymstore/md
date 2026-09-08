@@ -1,0 +1,1 @@
+<%- include('../partials/head') %><main class="error-page"><div class="error-code">500</div><h1>Server xatosi</h1><p>Tizim so‘rovni yakunlay olmadi.</p><% if (error) { %><pre><%= error.stack %></pre><% } %><a class="primary" href="/dashboard">Dashboardga qaytish</a></main><%- include('../partials/foot') %>

@@ -1,0 +1,30 @@
+<%- include('../partials/head') %><%- include('../partials/sidebar') %>
+<div class="app"><%- include('../partials/topbar') %><main class="content narrow"><%- include('../partials/flash') %>
+<section class="hero-line"><div><span class="eyebrow">MAGISTRANT ARIZASI</span><h1>Ilmiy ish / source yuborish</h1><p>Ma’lumotni bir marta to‘ldiring va faylni biriktiring. Keyingi bosqichlarni tizim o‘zi navbat bilan yuritadi.</p></div><a class="secondary" href="/submissions">← Arizalarim</a></section>
+
+<% if(!student){ %><section class="panel danger-panel"><h2>Profil bog‘lanmagan</h2><p>Bu login magistrant profiliga bog‘lanmagan. Magistratura bo‘limi yoki texnik xodim hisobni magistrantga biriktirishi kerak.</p></section>
+<% } else { %>
+<section class="student-context panel"><div class="avatar"><%= student.fullName.charAt(0) %></div><div><span class="eyebrow">ARIZA EGASI</span><h2><%= student.fullName %></h2><p><%= student.faculty||'—' %> → <%= student.department||'—' %> · <%= student.group||'—' %></p></div><div class="context-supervisor"><span>Ilmiy rahbar</span><b><%= student.supervisor?.fullName||'Biriktirilmagan' %></b></div></section>
+
+<% if(student.supervisor){ %><form method="post" action="/submissions" enctype="multipart/form-data" class="panel submission-form" id="submissionForm">
+<div class="panel-head"><div><span class="eyebrow">1-QADAM</span><h2>Ariza ma’lumotlari</h2></div><span class="badge">Majburiy maydonlar *</span></div>
+<div class="form-grid">
+<label>Material turi *<select name="type" id="submissionType" required><% Object.entries(typeLabels).forEach(([v,l])=>{ %><option value="<%= v %>"><%= l %></option><% }) %></select></label>
+<label>Jurnal / tashkilot / tadbir<input name="organization" placeholder="Ixtiyoriy"></label>
+<label class="wide">Ilmiy ish nomi *<input name="title" required maxlength="220" placeholder="Aniq va to‘liq nomini kiriting"></label>
+<label class="wide">Qisqacha mazmuni *<textarea name="description" required placeholder="Nima yuboryapsiz, maqsadi, holati va ilmiy mazmuni..."></textarea></label>
+<label>Sana<input type="date" name="eventDate"></label><label>Kalit so‘zlar<input name="keywords" placeholder="AI, energetika, iqtisodiyot..."></label>
+<label class="wide">Havola<input name="link" placeholder="DOI, Google Drive, jurnal sahifasi yoki boshqa havola"></label>
+</div>
+<div class="panel-head section-gap"><div><span class="eyebrow">2-QADAM</span><h2>Source / fayllar</h2></div><span class="badge">5 tagacha</span></div>
+<label class="dropzone submission-dropzone"><input type="file" name="files" multiple required><strong>⇧ Fayllarni tanlang</strong><span>PDF, DOCX, XLSX, PPTX, ZIP, rasm va boshqalar · har biri 20 MB gacha</span></label>
+<label class="comment-label">Ilmiy rahbarga izoh<textarea name="studentComment" placeholder="Masalan: maqolaning 2-versiyasi, metodologiya qismi yangilandi..."></textarea></label>
+
+<div class="panel-head section-gap"><div><span class="eyebrow">3-QADAM</span><h2>Tasdiqlash marshruti</h2></div></div>
+<div class="workflow-preview" id="workflowPreview"><div class="workflow-node active"><i>1</i><span>Magistrant</span></div><b>→</b><div class="workflow-node"><i>2</i><span>Ilmiy rahbar</span></div><b>→</b><div class="workflow-node"><i>3</i><span>Kafedra mudiri</span></div><b>→</b><div class="workflow-node"><i>4</i><span>Dekanat</span></div><b>→</b><div class="workflow-node"><i>5</i><span>Magistratura</span></div><span class="management-step" style="display:none"><b>→</b><span class="workflow-node"><i>6</i><span>Rahbariyat</span></span></span></div>
+<div class="secure-note">Har bir bosqichda <b>Ma’qullash</b>, <b>Qayta ishlashga qaytarish</b> yoki <b>Rad etish</b> qarori sharh bilan qayd qilinadi. Barcha tarix saqlanadi.</div>
+<div class="form-actions"><a class="ghost" href="/submissions">Bekor qilish</a><button class="primary xl">Arizani ilmiy rahbarga yuborish →</button></div>
+</form><% } else { %><section class="panel danger-panel"><h2>Ilmiy rahbar biriktirilmagan</h2><p>Arizani yuborish uchun avval profilingizga ilmiy rahbar biriktirilishi kerak.</p></section><% } %>
+<% } %>
+<script>document.addEventListener('DOMContentLoaded',function(){var s=document.getElementById('submissionType');var m=document.querySelector('.management-step');function sync(){if(!s||!m)return;m.style.display=['dissertation','thesis','defense'].includes(s.value)?'contents':'none'}if(s){s.addEventListener('change',sync);sync()}});</script>
+</main></div><%- include('../partials/foot') %>

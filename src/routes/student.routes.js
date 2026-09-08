@@ -1,0 +1,20 @@
+const router = require('express').Router();
+const c = require('../controllers/student.controller');
+const { requireAuth, requireRole } = require('../middleware/auth');
+const entry = requireRole('superadmin','tech','magistracy','dean','department');
+
+router.get('/', requireAuth, c.list);
+router.get('/export.csv', requireAuth, c.exportCsv);
+router.get('/check-duplicate', requireAuth, c.checkDuplicate);
+router.get('/me/profile', requireRole('student'), c.selfProfile);
+router.post('/me/profile', requireRole('student'), c.updateSelfProfile);
+router.get('/new', entry, c.newForm);
+router.post('/', entry, c.create);
+router.get('/quick', entry, c.quickForm);
+router.post('/quick', entry, c.quickCreate);
+router.post('/bulk', entry, c.bulkUpdate);
+router.get('/:id/edit', entry, c.editForm);
+router.post('/:id/edit', entry, c.updateProfile);
+router.get('/:id', requireAuth, c.view);
+router.post('/:id/progress', requireRole('superadmin','tech','magistracy','dean','department','supervisor','teacher'), c.updateProgress);
+module.exports = router;

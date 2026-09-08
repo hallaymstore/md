@@ -1,0 +1,16 @@
+const router=require('express').Router();
+const c=require('../controllers/modules.controller');
+const {requireAuth,requireRole}=require('../middleware/auth');
+const editors=['superadmin','tech','magistracy','dean','department','supervisor','teacher'];
+router.get('/seminars',requireAuth,c.seminars);
+router.post('/seminars',requireRole(...editors),c.createSeminar);
+router.post('/seminars/:id',requireRole(...editors),c.updateSeminar);
+router.get('/science',requireRole('superadmin','tech','magistracy','dean','department','supervisor','teacher','student'),c.science);
+router.post('/science',requireRole(...editors),c.createScience);
+router.post('/science/:id',requireRole(...editors),c.updateScience);
+router.get('/documents',requireRole('superadmin','tech','magistracy','dean','department','supervisor','student'),c.documents);
+router.post('/documents',requireRole(...editors),c.saveDocument);
+router.get('/tasks',requireAuth,c.tasks);
+router.post('/tasks',requireRole(...editors),c.createTask);
+router.post('/tasks/:id',requireRole(...editors,'student'),c.updateTask);
+module.exports=router;

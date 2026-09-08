@@ -1,0 +1,12 @@
+<%- include('../partials/head') %><%- include('../partials/sidebar') %>
+<div class="app"><%- include('../partials/topbar') %><main class="content narrow">
+<%- include('../partials/flash') %>
+<section class="hero-line compact"><div><span class="eyebrow">USER GOVERNANCE</span><h1><%= target.fullName %></h1><p><%= roleLabels[target.role] %> profilini tahrirlash.</p></div><a class="ghost" href="/users">← Hisoblar</a></section>
+<% if(credentialProtected){ %><section class="quick-note warning-box"><div><b>🔒 Login va parol yashirilgan</b><p>Texnik panel bu himoyalangan hisobning F.I.Sh., aloqa va strukturaviy ma’lumotlarini yangilaydi, lekin login/parolga tegmaydi.</p></div></section><% } %>
+<section class="panel"><form method="post" action="/users/<%= target._id %>/edit" class="form-grid">
+<label>F.I.Sh.<input name="fullName" required value="<%= target.fullName %>"></label><label>Xodim ID<input name="employeeId" value="<%= target.employeeId||'' %>"></label><label>Telefon<input name="phone" value="<%= target.phone||'' %>"></label><label>E-mail<input type="email" name="email" value="<%= target.email||'' %>"></label>
+<div class="academic-cascade span-all form-grid"><label>Fakultet<select name="faculty" data-academic="faculty" data-current="<%= target.faculty||'' %>"><option value="">Tanlang</option><% [...new Set(structures.map(x=>x.faculty))].forEach(x=>{ %><option value="<%= x %>" <%= target.faculty===x?'selected':'' %>><%= x %></option><% }) %></select></label><label>Kafedra<select name="department" data-academic="department" data-current="<%= target.department||'' %>"></select></label><select data-academic="specialty" hidden></select><select data-academic="group" hidden></select></div>
+<% if(currentUser.role==='superadmin'){ %><label>Login<input name="login" value="<%= target.login %>"></label><label>Rol<select name="role"><% Object.keys(roleLabels).forEach(r=>{ %><option value="<%= r %>" <%= target.role===r?'selected':'' %>><%= roleLabels[r] %></option><% }) %></select></label><% } %>
+<div class="form-actions span-all"><a class="ghost" href="/users">Bekor</a><button class="primary">Saqlash</button></div></form></section>
+<script type="application/json" id="academicStructureData"><%- JSON.stringify(structures).replace(/</g,'\\u003c') %></script>
+</main></div><%- include('../partials/foot') %>

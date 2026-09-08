@@ -1,0 +1,26 @@
+<%- include('../partials/head') %><%- include('../partials/sidebar') %><div class="app"><%- include('../partials/topbar') %><main class="content"><%- include('../partials/flash') %>
+<section class="hero-line compact"><div><span class="eyebrow">TEZ VA XATOSIZ KIRITISH</span><h1>Yangi magistrant</h1><p>Takroriy ma’lumotlarni yozmang — akademik tuzilmani tanlang, keyingi talaba uchun shu tanlovlar saqlanadi.</p></div><div class="hero-actions"><a class="secondary" href="/students/quick">⚡ Tezkor jadval</a><a class="ghost" href="/structure">⌘ Tuzilma katalogi</a></div></section>
+<section class="quick-note"><b>Tez kiritish:</b><span>Fakultet → kafedra → mutaxassislik → guruh</span><span>Guruh presetidan kurs/qabul yili/rahbar avtomatik tushadi</span><span><kbd>Alt</kbd>+<kbd>N</kbd> = saqlash va keyingisi</span></section>
+<% if(!structures.length){ %><section class="panel warning-box"><b>Akademik tuzilma katalogi bo‘sh.</b><p>Avval <a href="/structure">Akademik tuzilma</a> sahifasida fakultet/kafedra/mutaxassislik/guruh shablonlarini kiriting yoki mavjud talabalardan avtomatik yig‘ing.</p></section><% } %>
+<form method="post" action="/students" id="studentEntryForm" data-student-entry class="student-entry-form">
+<section class="panel"><div class="section-title-row"><div><span class="eyebrow">1. ASOSIY MA’LUMOT</span><h2>Magistrant kartochkasi</h2></div><a href="/students/new?clear=1" class="tiny-btn">Presetni tozalash</a></div>
+<div class="form-grid quick-main-grid">
+<label class="wide">F.I.Sh.<input name="fullName" required autofocus autocomplete="off" placeholder="Familiya Ism Sharif" data-focus-main></label>
+<label>Talaba ID<input name="studentId" autocomplete="off" placeholder="ID / shaxsiy kod" data-duplicate-field></label>
+<label>Login hisobiga bog‘lash<select name="user" data-linked-user><option value="">Hozircha bog‘lamaslik</option><% studentAccounts.forEach(u=>{ %><option value="<%= u._id %>" data-fullname="<%= u.fullName||'' %>" data-faculty="<%= u.faculty||'' %>" data-department="<%= u.department||'' %>" data-phone="<%= u.phone||'' %>" data-email="<%= u.email||'' %>" data-id="<%= u.employeeId||'' %>"><%= u.fullName %> — <%= u.login %></option><% }) %></select></label>
+</div><div class="duplicate-hint" data-duplicate-hint></div></section>
+<section class="panel"><div class="section-title-row"><div><span class="eyebrow">2. AKADEMIK TUZILMA</span><h2>Tanlab chiqing</h2></div><span class="badge">yozish o‘rniga select</span></div>
+<%- include('_academic-fields', { values: preset }) %>
+</section>
+<section class="panel"><div class="section-title-row"><div><span class="eyebrow">3. ALOQA VA ILMIY ISH</span><h2>Kerakli qo‘shimcha ma’lumot</h2></div></div><div class="form-grid">
+<label>Telefon<input name="phone" autocomplete="tel" placeholder="+998 ..."></label><label>E-mail<input type="email" name="email" autocomplete="email"></label>
+<label class="wide">Dissertatsiya mavzusi<input name="dissertationTitle" placeholder="Tasdiqlangan bo‘lsa kiriting"></label>
+<label>O‘qish holati<select name="studyStatus"><option value="active">Faol</option><option value="academic_leave">Akademik ta’til</option><option value="graduated">Bitirgan</option><option value="expelled">Chetlashtirilgan</option></select></label>
+</div></section>
+<details class="panel advanced-details"><summary><b>Monitoring ko‘rsatkichlari</b><span>Hozir kiritish shart emas — keyin profil orqali yangilanadi</span></summary><div class="form-grid monitoring-entry-grid">
+<label>Davomat %<input type="number" name="attendance" min="0" max="100" value="100"></label><label>O‘zlashtirish %<input type="number" name="academicScore" min="0" max="100" value="0"></label><label>Individual reja %<input type="number" name="individualPlan" min="0" max="100" value="0"></label><label>Dissertatsiya %<input type="number" name="dissertationProgress" min="0" max="100" value="0"></label><label>Ilmiy faollik %<input type="number" name="scientificActivity" min="0" max="100" value="0"></label><label>Hujjatlar to‘liqligi %<input type="number" name="documentsCompleteness" min="0" max="100" value="0"></label><label>Akademik qarzdorlik<input type="number" name="academicDebtCount" min="0" value="0"></label>
+</div></details>
+<div class="sticky-savebar"><div><b>Keyingi talabada strukturani qayta tanlamaysiz.</b><span>Oxirgi akademik tanlovlar avtomatik saqlanadi.</span></div><div class="savebar-actions"><a class="ghost" href="/students">Bekor qilish</a><button class="secondary" name="submitAction" value="save-list">Saqlash va ro‘yxat</button><button class="primary" name="submitAction" value="save-add" data-save-next>Saqlash + keyingisi →</button></div></div>
+</form>
+<script type="application/json" id="academicStructureData"><%- JSON.stringify(structures).replace(/</g,'\\u003c') %></script>
+</main></div><%- include('../partials/foot') %>

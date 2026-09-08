@@ -1,0 +1,28 @@
+<%- include('../partials/head') %><%- include('../partials/sidebar') %>
+<div class="app"><%- include('../partials/topbar') %><main class="content">
+<%- include('../partials/flash') %>
+<section class="hero-line role-hero submission-hero"><div><span class="eyebrow">ILMIY ISHLAR • APPROVAL WORKFLOW</span><h1>Ilmiy arizalar markazi</h1><p>Magistrant yuboradi → ilmiy rahbar sharhlaydi → kafedra mudiri → dekanat → magistratura; dissertatsiya/tezis/himoya materiallari rahbariyatgacha boradi.</p></div><div class="hero-actions"><% if(currentUser.role==='student'){ %><a class="primary" href="/submissions/new">+ Yangi ariza</a><% } %><a class="secondary" href="/science">Tasdiqlangan portfel</a></div></section>
+
+<section class="kpi-grid submission-kpis">
+  <article class="kpi"><span>JAMI ARIZA</span><strong><%= total %></strong><small>Sizga ko‘rinadigan</small></article>
+  <article class="kpi"><span>NAVBATDA</span><strong><%= pending %></strong><small><%= currentUser.role==='student'?'Tuzatish kutmoqda':'Sizning ko‘rib chiqishingiz' %></small></article>
+  <article class="kpi"><span>KO‘RIB CHIQILMOQDA</span><strong><%= inReview %></strong><small>Workflow ichida</small></article>
+  <article class="kpi"><span>QAYTA ISHLASH</span><strong><%= revision %></strong><small>Talabaga qaytgan</small></article>
+  <article class="kpi"><span>MA’QULLANGAN</span><strong><%= approved %></strong><small>Yakuniy tasdiq</small></article>
+  <article class="kpi"><span>RAD ETILGAN</span><strong><%= rejected %></strong><small>Yakuniy rad</small></article>
+</section>
+
+<section class="panel filter-panel"><form method="get" class="filter-grid submission-filter"><label>Qidiruv<input name="q" value="<%= query?.q||'' %>" placeholder="Nomi, fakultet, kafedra, guruh"></label><label>Holat<select name="status"><option value="">Barchasi</option><% Object.entries(statusLabels).forEach(([v,l])=>{ %><option value="<%= v %>" <%= query?.status===v?'selected':'' %>><%= l %></option><% }) %></select></label><label>Tur<select name="type"><option value="">Barchasi</option><% Object.entries(typeLabels).forEach(([v,l])=>{ %><option value="<%= v %>" <%= query?.type===v?'selected':'' %>><%= l %></option><% }) %></select></label><label>Bosqich<select name="stage"><option value="">Barchasi</option><% Object.entries(stageLabels).forEach(([v,l])=>{ if(!['student','completed'].includes(v)){ %><option value="<%= v %>" <%= query?.stage===v?'selected':'' %>><%= l %></option><% } }) %></select></label><div class="filter-actions"><button class="primary">Filtrlash</button><a class="ghost" href="/submissions">Tozalash</a></div></form></section>
+
+<section class="panel"><div class="panel-head"><div><span class="eyebrow">WORK QUEUE</span><h2>Arizalar</h2></div><span class="badge"><%= items.length %> ta ko‘rsatildi</span></div>
+<div class="submission-list">
+<% items.forEach(item=>{ const st=item.student; %>
+<a class="submission-card <%= item.status %>" href="/submissions/<%= item._id %>">
+  <div class="submission-icon"><%= item.type==='publication'?'M':item.type==='conference'?'K':item.type==='dissertation'?'D':item.type==='thesis'?'T':'S' %></div>
+  <div class="submission-main"><div class="submission-title-row"><b><%= item.title %></b><span class="status <%= item.status==='approved'?'green':item.status==='rejected'?'red':item.status==='needs_revision'?'yellow':'' %>"><%= statusLabels[item.status]||item.status %></span></div><span><%= st?.fullName||'—' %> · <%= item.group||st?.group||'—' %> · <%= typeLabels[item.type]||item.type %></span><small><%= item.department||'—' %> • Revision <%= item.revision %> • <%= new Date(item.updatedAt).toLocaleString('uz-UZ') %></small></div>
+  <div class="submission-stage"><span>Joriy bosqich</span><b><%= stageLabels[item.currentStage]||item.currentStage %></b><small><%= item.attachments?.length||0 %> fayl</small></div><strong class="arrow">→</strong>
+</a>
+<% }) %>
+<% if(!items.length){ %><div class="empty submission-empty"><b>Ariza topilmadi</b><span>Filtrni o‘zgartiring yoki yangi ariza yuboring.</span></div><% } %>
+</div></section>
+</main></div><%- include('../partials/foot') %>

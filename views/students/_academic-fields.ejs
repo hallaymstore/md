@@ -1,0 +1,41 @@
+<%
+  const current = typeof values !== 'undefined' && values ? values : {};
+  const unique = (arr) => [...new Set(arr.filter(Boolean))];
+  const facultyOptions = unique(structures.map(x=>x.faculty));
+%>
+<div class="academic-cascade" data-academic-cascade>
+  <label>Fakultet
+    <select name="faculty" data-academic="faculty" required>
+      <option value="">Tanlang</option>
+      <% facultyOptions.forEach(v=>{ %><option value="<%= v %>" <%= current.faculty===v?'selected':'' %>><%= v %></option><% }) %>
+    </select>
+  </label>
+  <label>Kafedra
+    <select name="department" data-academic="department" required data-current="<%= current.department||'' %>"><option value="">Tanlang</option></select>
+  </label>
+  <label>Mutaxassislik
+    <select name="specialty" data-academic="specialty" required data-current="<%= current.specialty||'' %>"><option value="">Tanlang</option></select>
+  </label>
+  <label>Guruh
+    <select name="group" data-academic="group" required data-current="<%= current.group||'' %>"><option value="">Tanlang</option></select>
+  </label>
+  <label>Kurs
+    <select name="course" data-academic-meta="course">
+      <option value="1" <%= Number(current.course||1)===1?'selected':'' %>>1-kurs</option>
+      <option value="2" <%= Number(current.course||1)===2?'selected':'' %>>2-kurs</option>
+      <option value="3" <%= Number(current.course||1)===3?'selected':'' %>>3-kurs</option>
+    </select>
+  </label>
+  <label>Qabul yili<input type="number" name="admissionYear" min="2000" max="2100" value="<%= current.admissionYear||currentYear %>" data-academic-meta="admissionYear"></label>
+  <label>Ta’lim shakli
+    <select name="educationForm" data-academic-meta="educationForm">
+      <% ['Magistratura','Kunduzgi','Kechki','Masofaviy'].forEach(v=>{ %><option value="<%= v %>" <%= (current.educationForm||'Magistratura')===v?'selected':'' %>><%= v %></option><% }) %>
+    </select>
+  </label>
+  <label>Ilmiy rahbar
+    <select name="supervisor" data-academic-meta="supervisor">
+      <option value="">Biriktirilmagan</option>
+      <% supervisors.forEach(s=>{ %><option value="<%= s._id %>" <%= String(current.supervisor?._id||current.supervisor||'')===String(s._id)?'selected':'' %>><%= s.fullName %></option><% }) %>
+    </select>
+  </label>
+</div>

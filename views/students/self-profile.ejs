@@ -1,0 +1,32 @@
+<%- include('../partials/head') %><%- include('../partials/sidebar') %>
+<div class="app"><%- include('../partials/topbar') %><main class="content narrow">
+<%- include('../partials/flash') %>
+<section class="hero-line role-hero role-hero-student"><div><span class="eyebrow">MENING PROFILIM</span><h1>Aloqa va shaxsiy ma’lumotlar</h1><p>Universitet strukturasi va monitoring ko‘rsatkichlarini xodimlar boshqaradi. Siz esa aloqa, yashash va ilmiy profil ma’lumotlaringizni o‘zingiz yangilaysiz.</p></div><div class="profile-complete"><b><%= student.profileCompleteness||0 %>%</b><span>profil to‘ldirilgan</span></div></section>
+<section class="privacy-note"><b>🔐 Ko‘rinish nazorati</b><span>Manzil va favqulodda aloqa faqat vakolatli administrativ rollarga ko‘rinadi. Ilmiy rahbar faqat kerakli aloqa va ilmiy profilni ko‘radi. O‘qituvchi hamda rahbariyatga barcha shaxsiy maydonlar ochilmaydi.</span></section>
+<section class="panel"><form method="post" action="/students/me/profile" class="form-grid student-self-form">
+<h3 class="span-all form-section-title">Aloqa</h3>
+<label>Asosiy telefon<input name="phone" value="<%= student.phone||'' %>" placeholder="+998 ..."></label>
+<label>Qo‘shimcha telefon<input name="alternatePhone" value="<%= student.alternatePhone||'' %>"></label>
+<label>E-mail<input type="email" name="email" value="<%= student.email||'' %>"></label>
+<label>Qo‘shimcha e-mail<input type="email" name="secondaryEmail" value="<%= student.secondaryEmail||'' %>"></label>
+<label>Telegram<input name="telegram" value="<%= student.telegram||'' %>" placeholder="@username"></label>
+<label>LinkedIn / professional profil<input name="linkedinUrl" value="<%= student.linkedinUrl||'' %>" placeholder="https://..."></label>
+<h3 class="span-all form-section-title">Hudud va yashash joyi</h3>
+<label>Viloyat<input name="region" value="<%= student.region||'' %>"></label><label>Tuman / shahar<input name="district" value="<%= student.district||'' %>"></label>
+<label class="wide">Hozirgi yashash manzili<input name="currentAddress" value="<%= student.currentAddress||'' %>"></label>
+<label class="wide">Doimiy manzil<input name="permanentAddress" value="<%= student.permanentAddress||'' %>"></label>
+<label>Tug‘ilgan sana<input type="date" name="birthDate" value="<%= student.birthDate?new Date(student.birthDate).toISOString().slice(0,10):'' %>"></label>
+<h3 class="span-all form-section-title">Favqulodda aloqa</h3>
+<label>Yaqin shaxs F.I.Sh.<input name="emergencyContactName" value="<%= student.emergencyContactName||'' %>"></label><label>Qarindoshlik / munosabat<input name="emergencyContactRelation" value="<%= student.emergencyContactRelation||'' %>" placeholder="ota, ona, turmush o‘rtog‘i..."></label><label>Telefon<input name="emergencyContactPhone" value="<%= student.emergencyContactPhone||'' %>"></label>
+<h3 class="span-all form-section-title">Oldingi ta’lim va ko‘nikmalar</h3>
+<label>Oldingi OTM<input name="previousUniversity" value="<%= student.previousUniversity||'' %>"></label><label>Bakalavr mutaxassisligi<input name="bachelorSpecialty" value="<%= student.bachelorSpecialty||'' %>"></label>
+<label class="wide">Tillar va daraja<input name="languages" value="<%= student.languages||'' %>" placeholder="Masalan: Rus tili — B2, Ingliz tili — B1"></label>
+<h3 class="span-all form-section-title">Bandlik</h3>
+<label>Bandlik holati<select name="employmentStatus"><option value="not_working" <%= student.employmentStatus==='not_working'?'selected':'' %>>Ishlamaydi</option><option value="working" <%= student.employmentStatus==='working'?'selected':'' %>>Ishlaydi</option><option value="self_employed" <%= student.employmentStatus==='self_employed'?'selected':'' %>>O‘zini o‘zi band qilgan</option><option value="other" <%= student.employmentStatus==='other'?'selected':'' %>>Boshqa</option></select></label>
+<label>Ish joyi / tashkilot<input name="employer" value="<%= student.employer||'' %>"></label><label>Lavozim<input name="jobTitle" value="<%= student.jobTitle||'' %>"></label>
+<h3 class="span-all form-section-title">Ilmiy profil</h3>
+<label class="wide">Ilmiy qiziqishlar<textarea name="researchInterests" placeholder="Yo‘nalishlar, mavzular, kalit so‘zlar"><%= student.researchInterests||'' %></textarea></label>
+<label>ORCID<input name="orcid" value="<%= student.orcid||'' %>" placeholder="0000-0000-0000-0000"></label><label>Google Scholar / profil havolasi<input name="scholarUrl" value="<%= student.scholarUrl||'' %>"></label>
+<div class="form-actions span-all"><a class="ghost" href="/dashboard">Bekor</a><button class="primary">Profilni saqlash</button></div>
+</form></section>
+</main></div><%- include('../partials/foot') %>

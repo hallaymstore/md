@@ -1,0 +1,40 @@
+<%- include('../partials/head') %>
+<main class="login-shell light-auth-v21"><button class="auth-theme-toggle theme-toggle" type="button" data-theme-toggle title="Kunduzgi / tungi mavzu"><span class="theme-icon">☾</span><span class="theme-label">Tungi</span></button>
+  <section class="login-info login-intro">
+    <div class="login-brand-row">
+      <div class="university-mark"><span>MD</span></div>
+      <div><b>QARSHI DAVLAT TEXNIKA UNIVERSITETI</b><small>Ichki raqamli boshqaruv tizimi</small></div>
+      <span class="version-badge">APPROVAL WORKFLOW • v2.5</span>
+    </div>
+    <div class="login-copy">
+      <span class="eyebrow">MAGISTRATURA ELEKTRON MONITORINGI</span>
+      <h1><em>MD QDTU</em><br><span>magistratura boshqaruv markazi</span></h1>
+      <p>Rahbariyatdan magistrantgacha — har bir foydalanuvchi uchun alohida vakolat, alohida kabinet va real monitoring.</p>
+      <div class="login-feature-grid">
+        <div><i>01</i><b>Role dashboard</b><span>9 darajali alohida kabinet</span></div>
+        <div><i>02</i><b>360° analitika</b><span>Davomat, reja, ilmiy faoliyat</span></div>
+        <div><i>03</i><b>12 bosqich</b><span>Dissertatsiya roadmap nazorati</span></div>
+        <div><i>04</i><b>Source markazi</b><span>Hujjat va fayllarni biriktirish</span></div>
+      </div>
+    </div>
+    <div class="secure-line"><span>●</span> Ochiq ro‘yxatdan o‘tish mavjud emas • hisoblar vakolat zanjiri orqali beriladi</div>
+  </section>
+
+  <section class="login-side">
+    <div class="login-card light-login-card">
+      <div class="login-card-top"><div class="login-logo">MD</div><span class="internal-chip">INTERNAL ACCESS</span></div>
+      <span class="eyebrow">XAVFSIZ KIRISH</span>
+      <h2>Tizimga kirish</h2>
+      <p>Texnik xodim yoki vakolatli administrator bergan login va paroldan foydalaning.</p>
+      <%- include('../partials/flash') %>
+      <form method="post" action="/login" class="stack login-form-v21">
+        <label><span>LOGIN</span><div class="input-shell"><i>👤</i><input name="login" autocomplete="username" required placeholder="masalan: texnik01"></div></label>
+        <label><span>PAROL</span><div class="input-shell"><i>⌁</i><input type="password" name="password" autocomplete="current-password" required placeholder="••••••••"></div></label>
+        <button class="primary xl login-submit">Kirish <span>→</span></button>
+      </form>
+      <div class="login-security"><span>✓</span><div><b>Yopiq universitet tizimi</b><small>Public register o‘chirilgan. Harakatlar audit jurnalida qayd etiladi.</small></div></div>
+      <footer>MD QDTU • UI build 2.5.0-APPROVAL-WORKFLOW</footer>
+    </div>
+  </section>
+</main>
+<%- include('../partials/foot') %>

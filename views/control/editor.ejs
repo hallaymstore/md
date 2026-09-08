@@ -1,0 +1,12 @@
+<%- include('../partials/head') %><%- include('../partials/sidebar') %><div class="app"><%- include('../partials/topbar') %><main class="content narrow"><%- include('../partials/flash') %>
+<section class="hero-line compact"><div><span class="eyebrow">ADMIN DATA EDITOR</span><h1><%= cfg.label %></h1><p><%= item[cfg.title]||item._id %></p></div><a class="ghost" href="/control">← Nazorat markazi</a></section>
+<section class="panel"><form method="post" action="/control/<%= entity %>/<%= item._id %>" class="form-grid">
+<% fields.forEach(f=>{ %><label class="<%= ['description','notes','comment','result','resolution'].includes(f.name)?'wide':'' %>"><%= f.name %>
+<% if(f.kind==='select'){ %><select name="<%= f.name %>"><% f.options.forEach(o=>{ %><option value="<%= o %>" <%= String(f.value||'')===o?'selected':'' %>><%= o %></option><% }) %></select>
+<% } else if(f.kind==='textarea'){ %><textarea name="<%= f.name %>"><%= f.value||'' %></textarea>
+<% } else if(f.kind==='boolean'){ %><span class="check-line"><input type="checkbox" name="<%= f.name %>" <%= f.value?'checked':'' %>> Ha</span>
+<% } else if(f.kind==='date'){ %><input type="date" name="<%= f.name %>" value="<%= f.value?new Date(f.value).toISOString().slice(0,10):'' %>">
+<% } else { %><input type="<%= f.kind==='number'?'number':'text' %>" name="<%= f.name %>" value="<%= f.value??'' %>"><% } %></label><% }) %>
+<div class="form-actions span-all"><a class="ghost" href="/control">Bekor</a><button class="primary">Saqlash</button></div></form></section>
+<section class="danger-zone panel"><div><b>Yozuvni o‘chirish</b><span>Bu amal audit jurnaliga yoziladi.</span></div><form method="post" action="/control/<%= entity %>/<%= item._id %>/delete" onsubmit="return confirm('Yozuvni butunlay o‘chirishni tasdiqlaysizmi?')"><button class="danger-btn solid">Butunlay o‘chirish</button></form></section>
+</main></div><%- include('../partials/foot') %>
