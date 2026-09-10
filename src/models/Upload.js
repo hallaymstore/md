@@ -11,6 +11,9 @@ const uploadSchema = new mongoose.Schema({
   faculty: String,
   department: String,
   student: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
+  submission: { type: mongoose.Schema.Types.ObjectId, ref: 'ResearchSubmission', index: true },
+  submissionRevision: { type: Number, min: 1 },
+  storageScope: { type: String, enum: ['public', 'protected'], default: 'public', index: true },
   uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true }
 }, { timestamps: true });
 

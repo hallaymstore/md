@@ -1,7 +1,17 @@
-const fs=require('fs');const path=require('path');const {execFileSync}=require('child_process');
-function walk(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>{const p=path.join(dir,e.name);return e.isDirectory()?walk(p):[p]});}
-const files=[...walk('src'),...walk('scripts'),'app.js','server.js'].filter(f=>f.endsWith('.js')&&!f.endsWith('check.js'));
-for(const f of files)execFileSync(process.execPath,['--check',f],{stdio:'ignore'});
-const ejs=walk('views').filter(f=>f.endsWith('.ejs'));
-for(const f of ejs){const s=fs.readFileSync(f,'utf8');if((s.match(/<%/g)||[]).length!==(s.match(/%>/g)||[]).length)throw new Error(`EJS delimiter mismatch: ${f}`);}
-console.log(`OK: ${files.length} JS files + ${ejs.length} EJS templates checked.`);
+const fs=require('fs');
+const path=require('path');
+const {execFileSync}=require('child_process');
+const ejsCompiler=require('ejs');
+
+function walk(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(entry=>{const item=path.join(dir,entry.name);return entry.isDirectory()?walk(item):[item]});}
+
+const files=[...walk('src'),...walk('scripts'),'app.js','server.js'].filter(file=>file.endsWith('.js')&&!file.endsWith('check.js'));
+for(const file of files)execFileSync(process.execPath,['--check',file],{stdio:'ignore'});
+
+const templates=walk('views').filter(file=>file.endsWith('.ejs'));
+for(const file of templates){
+  const source=fs.readFileSync(file,'utf8');
+  if((source.match(/<%/g)||[]).length!==(source.match(/%>/g)||[]).length)throw new Error(`EJS delimiter mismatch: ${file}`);
+  ejsCompiler.compile(source,{filename:path.resolve(file)});
+}
+console.log(`OK: ${files.length} JS files + ${templates.length} compiled EJS templates checked.`);

@@ -1,0 +1,65 @@
+<%- include('../partials/head') %><%- include('../partials/sidebar') %>
+<div class="app"><%- include('../partials/topbar') %><main class="content">
+<%- include('../partials/flash') %>
+<section class="group-page-hero" data-live-stats data-live-url="/dashboard/live?group=<%= encodeURIComponent(groupName) %>">
+  <div class="group-page-title">
+    <a class="back-link" href="/dashboard">← Bosh panel</a>
+    <div>
+      <span class="eyebrow">GURUH STATISTIKASI</span>
+      <h1><%= groupName %></h1>
+      <p><%= students[0]?.faculty || '—' %> · <%= students[0]?.department || '—' %> · <%= students[0]?.specialty || '—' %></p>
+    </div>
+    <div class="live-state is-online" data-live-status role="status" aria-live="polite"><i></i><span>Jonli</span></div>
+  </div>
+
+  <div class="headline-kpi-grid group-kpis">
+    <article class="headline-kpi primary-stat"><span>JAMI</span><strong data-live-key="total"><%= metrics.total %></strong><small>magistrant</small></article>
+    <article class="headline-kpi"><span>1-KURS</span><strong data-live-key="course1"><%= metrics.course1 %></strong><small>magistrant</small></article>
+    <article class="headline-kpi"><span>2-KURS</span><strong data-live-key="course2"><%= metrics.course2 %></strong><small>magistrant</small></article>
+    <article class="headline-kpi"><span>BITIRUV TAYYORLIGI</span><strong data-live-key="averages.readiness"><%= metrics.readiness %>%</strong><small>guruh o‘rtachasi</small></article>
+  </div>
+</section>
+
+<section class="group-insight-grid">
+  <article class="panel compact-insight">
+    <div class="panel-head"><div><span class="eyebrow">UMUMIY HOLAT</span><h2>Holat taqsimoti</h2></div></div>
+    <div class="traffic-summary">
+      <div class="green"><b data-live-key="status.green"><%= students.filter(s => s.status === 'green').length %></b><span>Yaxshi</span></div>
+      <div class="yellow"><b data-live-key="status.yellow"><%= students.filter(s => s.status === 'yellow').length %></b><span>Nazoratda</span></div>
+      <div class="red"><b data-live-key="status.red"><%= students.filter(s => s.status === 'red').length %></b><span>Muammoli</span></div>
+    </div>
+  </article>
+  <article class="panel compact-insight">
+    <div class="panel-head"><div><span class="eyebrow">O‘RTACHA NATIJA</span><h2>Asosiy progress</h2></div></div>
+    <div class="compact-progress-list">
+      <div><span>Davomat</span><i><b style="width:<%= metrics.attendance %>%" data-live-progress="averages.attendance"></b></i><strong data-live-key="averages.attendance"><%= metrics.attendance %>%</strong></div>
+      <div><span>Individual reja</span><i><b style="width:<%= metrics.plan %>%" data-live-progress="averages.plan"></b></i><strong data-live-key="averages.plan"><%= metrics.plan %>%</strong></div>
+      <div><span>Dissertatsiya</span><i><b style="width:<%= metrics.dissertation %>%" data-live-progress="averages.dissertation"></b></i><strong data-live-key="averages.dissertation"><%= metrics.dissertation %>%</strong></div>
+    </div>
+  </article>
+</section>
+
+<section class="panel group-students-panel">
+  <div class="panel-head group-list-head">
+    <div><span class="eyebrow">MAGISTRANTLAR</span><h2>Guruh tarkibi — <span data-group-result-count><%= students.length %></span> ta</h2></div>
+    <label class="compact-search student-search"><span class="sr-only">Talabani qidirish</span><input type="search" placeholder="F.I.Sh. yoki ID bo‘yicha…" data-student-search autocomplete="off"></label>
+  </div>
+  <div class="group-student-list">
+    <% students.forEach(student => { const search = [student.fullName, student.studentId, student.specialty, student.supervisor?.fullName].filter(Boolean).join(' ').toLocaleLowerCase('uz-UZ'); %>
+      <a class="group-student-row" href="/students/<%= student._id %>" data-student-search-item="<%= search %>">
+        <%- include('../partials/avatar', { user:student.user || {role:'student',fullName:student.fullName}, size:'sm' }) %>
+        <div class="student-identity">
+          <b><%= student.fullName %></b>
+          <span><%= student.studentId || 'ID yo‘q' %> · <%= student.course %>-kurs</span>
+        </div>
+        <div class="student-supervisor"><span>Ilmiy rahbar</span><b><%= student.supervisor?.fullName || 'Biriktirilmagan' %></b></div>
+        <div class="student-work"><span>Ilmiy portfel</span><b><%= student.portfolio.count %> ta ish</b><small><%= student.portfolio.latest ? student.portfolio.latest.title : 'Hali yakunlangan ish yo‘q' %></small></div>
+        <div class="student-score"><span>Bitiruv</span><b><%= student.graduationReadiness %>%</b></div>
+        <span class="status <%= student.status %>"><%= student.status === 'green' ? 'yaxshi' : student.status === 'yellow' ? 'nazorat' : 'muammoli' %></span>
+        <strong class="row-arrow">→</strong>
+      </a>
+    <% }) %>
+  </div>
+  <div class="simple-empty" data-student-empty hidden>Qidiruv bo‘yicha magistrant topilmadi.</div>
+</section>
+</main></div><%- include('../partials/foot') %>

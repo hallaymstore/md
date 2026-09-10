@@ -1,0 +1,16 @@
+<section class="network-pulse panel motion-panel" data-network-pulse>
+  <div class="network-pulse-head">
+    <div><span class="eyebrow"><%= currentUser.role==='student' ? 'AKADEMIK HAMJAMIYAT' : 'ROL VA PROFILLAR KESIMI' %></span><h2><%= currentUser.role==='student' ? 'Siz bilan bog‘liq ichki tarmoq' : 'Tizimdagi faol hamjamiyat' %></h2><p>Profil kartasini bosing — vakolatingizga mos qisqartirilgan ma’lumot ochiladi.</p></div>
+    <a class="secondary" href="/profile">Mening profilim →</a>
+  </div>
+  <div class="network-stat-grid">
+    <a class="network-stat" href="/students"><span>Magistrant</span><strong><%= networkStats.students || kpis.total %></strong><i>◉</i></a>
+    <a class="network-stat" href="<%= currentUser.role==='student' ? '#community-profiles' : '/insights/supervisors' %>"><span>Ilmiy rahbar</span><strong><%= networkStats.supervisors %></strong><i>◌</i></a>
+    <a class="network-stat" href="/students"><span>Guruh</span><strong><%= networkStats.groups %></strong><i>G</i></a>
+    <a class="network-stat" href="<%= currentUser.role==='student' ? '#community-profiles' : '/analytics' %>"><span>Kafedra</span><strong><%= networkStats.departments %></strong><i>K</i></a>
+    <a class="network-stat" href="/profile"><span>Profil rasmi</span><strong><%= networkStats.withPhoto %></strong><small>/<%= networkStats.people %></small><i>◎</i></a>
+  </div>
+  <% if(communityProfiles?.length){ %><div class="people-ribbon" id="community-profiles" aria-label="Faol profillar">
+    <% communityProfiles.forEach(person=>{ %><a class="people-chip" href="/profile/<%= person._id %>" title="<%= person.fullName %>"><%- include('../partials/avatar', { user:person, size:'sm' }) %><span><b><%= person.fullName %></b><small><%= roleLabels[person.role] || person.role %></small></span><em>→</em></a><% }) %>
+  </div><% } %>
+</section>

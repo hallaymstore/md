@@ -1,26 +1,39 @@
 @echo off
 chcp 65001 >nul
-title MD QDTU - APPROVAL WORKFLOW v2.5
+title MD
 cd /d "%~dp0"
-echo ================================================
-echo MD QDTU - APPROVAL WORKFLOW v2.5.0
-echo ================================================
-echo.
+echo =====================================================
+echo        MD
+echo        Magistratura boshqaruv tizimi
+echo =====================================================
+where node >nul 2>nul || (
+  echo [XATO] Platformani ishga tushirish uchun kerakli komponent topilmadi.
+  echo Mas'ul texnik xodimga murojaat qiling.
+  pause
+  exit /b 1
+)
 if not exist .env (
-  copy /Y .env.example .env >nul
-  echo [OK] .env yaratildi.
+  echo [XATO] Platformaning ulanish sozlamalari topilmadi.
+  echo Mas'ul texnik xodimga murojaat qiling.
+  pause
+  exit /b 1
 )
-if not exist node_modules (
-  echo [1/2] Paketlar o'rnatilmoqda...
-  call npm install
-  if errorlevel 1 goto :fail
+if not exist node_modules\ejs\package.json (
+  echo Platforma birinchi ishga tushirish uchun tayyorlanmoqda...
+  call npm install >nul 2>&1 || (
+    echo [XATO] Platformani tayyorlash yakunlanmadi. Internet aloqasini tekshiring yoki mas'ul xodimga murojaat qiling.
+    pause
+    exit /b 1
+  )
 )
-echo [2/2] Server ishga tushmoqda: http://localhost:3001
-echo UI build: 2.5.0-APPROVAL-WORKFLOW
-call npm run dev
-goto :end
-:fail
+echo Platforma ishga tushmoqda...
 echo.
-echo [XATO] npm install bajarilmadi. Internet va Node.js ni tekshiring.
+echo Kirish oynasi: http://localhost:3001/login
+echo Katta ekran:   http://localhost:3001/display?kiosk=1
+echo.
+node server.js
+if errorlevel 1 (
+  echo.
+  echo [XATO] Platforma bilan bog'lanib bo'lmadi. Internet va ma'lumotlar bazasi ulanishini tekshiring.
+)
 pause
-:end

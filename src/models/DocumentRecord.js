@@ -9,6 +9,7 @@ const documentRecordSchema = new mongoose.Schema({
   issueDate: Date,
   expiresAt: Date,
   notes: { type: String, trim: true },
+  submission: { type: mongoose.Schema.Types.ObjectId, ref: 'ResearchSubmission', index: true, unique: true, sparse: true },
   updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 

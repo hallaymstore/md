@@ -10,6 +10,7 @@ const scientificActivitySchema = new mongoose.Schema({
   score: { type: Number, min: 0, max: 100, default: 0 },
   link: { type: String, trim: true },
   notes: { type: String, trim: true },
+  submission: { type: mongoose.Schema.Types.ObjectId, ref: 'ResearchSubmission', index: true, unique: true, sparse: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 

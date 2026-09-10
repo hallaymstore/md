@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const Student = require('../models/Student');
 const AcademicStructure = require('../models/AcademicStructure');
+const ResearchSubmission = require('../models/ResearchSubmission');
+const Notification = require('../models/Notification');
 const { CAN_CREATE, ROLE_LABELS, PROTECTED_CREDENTIAL_ROLES } = require('../config/roles');
 const audit = require('../services/audit');
 
@@ -114,6 +116,10 @@ exports.toggle = async (req, res, next) => {
     const target = await User.findById(req.params.id);
     if (!target || !canSecurityManage(req, target)) return res.status(403).render('errors/403', { title: 'Ruxsat yo‘q' });
     if(String(target._id)===String(req.user._id)){req.session.flash={type:'warning',text:'O‘z hisobingizni bloklay olmaysiz.'};return res.redirect('/users');}
+    if(target.active&&['supervisor','teacher'].includes(target.role)){
+      const activeReviews=await ResearchSubmission.countDocuments({supervisor:target._id,status:{$in:['draft','under_review','changes_requested']}});
+      if(activeReviews){req.session.flash={type:'warning',text:`Hisobni bloklashdan oldin ${activeReviews} ta faol arizada ilmiy rahbarni almashtiring.`};return res.redirect('/users');}
+    }
     target.active = !target.active; await target.save();
     await audit(req, target.active ? 'USER_ENABLED' : 'USER_DISABLED', 'User', target._id); res.redirect('/users');
   } catch (e) { next(e); }
@@ -137,7 +143,9 @@ exports.remove=async(req,res,next)=>{
     if(String(target._id)===String(req.user._id)||target.role==='superadmin'||(req.user.role==='tech'&&PROTECTED_CREDENTIAL_ROLES.includes(target.role))){req.session.flash={type:'warning',text:'Bu himoyalangan hisobni texnik paneldan o‘chirib bo‘lmaydi.'};return res.redirect('/users');}
     const linked=await Student.countDocuments({user:target._id});
     if(linked){req.session.flash={type:'warning',text:`Bu hisob ${linked} ta magistrant profiliga bog‘langan. Avval bog‘lanishni o‘zgartiring.`};return res.redirect('/users');}
-    await target.deleteOne(); await audit(req,'USER_DELETED','User',req.params.id,{role:target.role,login:req.user.role==='tech'?'[protected-by-policy]':target.login});
+    const activeReviews=await ResearchSubmission.countDocuments({supervisor:target._id,status:{$in:['draft','under_review','changes_requested']}});
+    if(activeReviews){req.session.flash={type:'warning',text:`Bu foydalanuvchiga ${activeReviews} ta faol ilmiy ariza bog‘langan. Avval arizalarda ilmiy rahbarni almashtiring.`};return res.redirect('/users');}
+    await Notification.deleteMany({recipient:target._id}); await target.deleteOne(); await audit(req,'USER_DELETED','User',req.params.id,{role:target.role,login:req.user.role==='tech'?'[protected-by-policy]':target.login});
     req.session.flash={type:'success',text:'Foydalanuvchi hisobi o‘chirildi.'};res.redirect('/users');
   }catch(e){next(e);}
 };

@@ -1,7 +1,10 @@
 const Student = require('../models/Student');
 const User = require('../models/User');
 const AcademicStructure = require('../models/AcademicStructure');
+const ScientificActivity = require('../models/ScientificActivity');
+const ResearchSubmission = require('../models/ResearchSubmission');
 const { scopeQueryForUser } = require('../middleware/auth');
+const { SUBMISSION_TYPES } = require('../config/submissionWorkflow');
 const audit = require('../services/audit');
 const stages = require('../utils/dissertationStages');
 
@@ -9,6 +12,9 @@ const ENTRY_ROLES = ['superadmin','tech','magistracy','dean','department'];
 const clean = v => String(v || '').trim();
 const num = (v, fallback = 0) => (v === '' || v === undefined || v === null ? fallback : Number(v));
 const rx = v => new RegExp(String(v).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+const SCIENCE_TYPE_LABELS = { publication:'Ilmiy maqola', conference:'Konferensiya', research:'Tadqiqot', seminar:'Ilmiy seminar' };
+const SCIENCE_STATUS_LABELS = { accepted:'Qabul qilingan', published:'Chop etilgan', completed:'Yakunlangan' };
+const safeHttpUrl = value => /^https?:\/\//i.test(String(value || '').trim()) ? String(value).trim() : '';
 
 function structureScope(user, query = { active: true }) {
   if (user.role === 'dean' && user.faculty) return { ...query, faculty: user.faculty };
@@ -52,7 +58,8 @@ function applyScopeToBody(req, body) {
 
 
 function profileAccessFor(user, student) {
-  const self = user.role === 'student' && String(student.user || '') === String(user._id);
+  const linkedUserId = student.user?._id || student.user || '';
+  const self = user.role === 'student' && String(linkedUserId) === String(user._id);
   const full = self || ['superadmin','tech','magistracy','dean','department'].includes(user.role);
   const limited = full || user.role === 'supervisor';
   const academic = limited || user.role === 'teacher';
@@ -109,7 +116,7 @@ function buildListQuery(req) {
 exports.list = async (req, res, next) => {
   try {
     const { query, q } = buildListQuery(req);
-    const students = await Student.find(query).populate('supervisor','fullName').sort({ fullName: 1 }).lean();
+    const students = await Student.find(query).populate('supervisor','fullName avatarPath role').populate('user','fullName role avatarPath').sort({ fullName: 1 }).lean();
     const scoped = scopeQueryForUser(req.user, {});
     const bulkSupervisorQuery = { role:{ $in:['supervisor','teacher'] }, active:true };
     if (req.user.role === 'dean') bulkSupervisorQuery.faculty = req.user.faculty;
@@ -232,7 +239,7 @@ exports.exportCsv = async (req, res, next) => {
     const rows = students.map(s => [s.fullName,s.studentId,s.faculty,s.department,s.specialty,s.group,s.course,s.admissionYear,s.supervisor?.fullName,...(contactAllowed?[s.phone,s.email]:[]),s.attendance,s.academicScore,s.individualPlan,s.dissertationProgress,s.scientificActivity,s.documentsCompleteness,s.academicDebtCount,s.status]);
     const csv = '\uFEFF' + [headers, ...rows].map(r => r.map(esc).join(',')).join('\r\n');
     res.setHeader('Content-Type','text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition','attachment; filename="qdt-magistrantlar.csv"');
+    res.setHeader('Content-Disposition','attachment; filename="md-magistrantlar.csv"');
     res.send(csv);
   } catch (e) { next(e); }
 };
@@ -275,9 +282,65 @@ exports.bulkUpdate = async (req, res, next) => {
 exports.view = async (req, res, next) => {
   try {
     const query = scopeQueryForUser(req.user, { _id: req.params.id });
-    const student = await Student.findOne(query).populate('supervisor','fullName email phone').lean();
+    const student = await Student.findOne(query).populate('supervisor','fullName email phone avatarPath role').populate('user','fullName role avatarPath faculty department').lean();
     if (!student) return res.status(404).render('errors/404', { title: 'Magistrant topilmadi' });
-    res.render('students/view', { title: student.fullName, student, stages, profileAccess: profileAccessFor(req.user, student) });
+    const [scientificWorks, approvedSubmissions] = await Promise.all([
+      ScientificActivity.find({
+        student: student._id,
+        status: { $in: ['accepted', 'published', 'completed'] }
+      }).populate('submission', '_id applicationNo').sort({ date: -1, createdAt: -1 }).lean(),
+      ResearchSubmission.find({ student: student._id, status: 'approved' })
+        .select('applicationNo type title abstract completedAt updatedAt createdAt')
+        .sort({ completedAt: -1, updatedAt: -1 })
+        .lean()
+    ]);
+    const linkedSubmissionIds = new Set(scientificWorks.map(item => String(item.submission?._id || item.submission || '')).filter(Boolean));
+    const activityFeed = [
+      ...scientificWorks.map(item => ({
+        key: `science-${item._id}`,
+        kind: 'science',
+        typeLabel: SCIENCE_TYPE_LABELS[item.type] || 'Ilmiy ish',
+        title: item.title,
+        summary: item.notes || '',
+        organization: item.organization || '',
+        date: item.date || item.updatedAt || item.createdAt,
+        statusLabel: SCIENCE_STATUS_LABELS[item.status] || 'Yakunlangan',
+        statusTone: 'green',
+        score: Number(item.score || 0),
+        externalUrl: safeHttpUrl(item.link),
+        detailUrl: item.submission ? `/submissions/${item.submission._id || item.submission}` : '/science',
+        applicationNo: item.submission?.applicationNo || ''
+      })),
+      ...approvedSubmissions.filter(item => !linkedSubmissionIds.has(String(item._id))).map(item => ({
+        key: `submission-${item._id}`,
+        kind: 'submission',
+        typeLabel: SUBMISSION_TYPES[item.type] || 'Ilmiy material',
+        title: item.title,
+        summary: item.abstract || '',
+        organization: 'MD ilmiy tasdiqlash tizimi',
+        date: item.completedAt || item.updatedAt || item.createdAt,
+        statusLabel: 'To‘liq tasdiqlangan',
+        statusTone: 'green',
+        score: 100,
+        externalUrl: '',
+        detailUrl: `/submissions/${item._id}`,
+        applicationNo: item.applicationNo || ''
+      }))
+    ].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0));
+    const portfolioStats = {
+      total: activityFeed.length,
+      publications: scientificWorks.filter(item => item.type === 'publication').length,
+      conferences: scientificWorks.filter(item => item.type === 'conference').length,
+      approved: approvedSubmissions.length
+    };
+    res.render('students/view', {
+      title: student.fullName,
+      student,
+      stages,
+      profileAccess: profileAccessFor(req.user, student),
+      activityFeed,
+      portfolioStats
+    });
   } catch (e) { next(e); }
 };
 
@@ -342,7 +405,7 @@ exports.updateProgress = async (req, res, next) => {
 
 exports.selfProfile = async (req,res,next) => {
   try {
-    const student = await Student.findOne({ user:req.user._id }).populate('supervisor','fullName email phone').lean();
+    const student = await Student.findOne({ user:req.user._id }).populate('supervisor','fullName email phone avatarPath role').populate('user','fullName role avatarPath').lean();
     if(!student) return res.status(404).render('errors/404',{title:'Magistrant profili topilmadi'});
     res.render('students/self-profile',{title:'Mening aloqa va profil ma’lumotlarim',student});
   } catch(e){ next(e); }

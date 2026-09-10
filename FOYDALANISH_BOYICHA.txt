@@ -1,0 +1,12 @@
+MD
+
+1. START_WINDOWS.bat faylini oching.
+2. Brauzerda MD kirish oynasi ochiladi.
+3. Login va parol bilan kiring.
+4. Har bir bo‘lim yonidagi "i" belgisi shu qism vazifasini tushuntiradi.
+5. "Muddatlar markazi" — yaqin va kechikkan ishlarni ko‘rsatadi.
+6. "Muammo va chora" — muammoni mas’ul, chora, muddat va natija bilan kuzatadi.
+7. "Bitiruvga tayyorlik" — bitiruv uchun kerakli bandlarni tekshiradi.
+8. "O‘zgarishlar dinamikasi" — ko‘rsatkichlarning vaqt bo‘yicha o‘zgarishini ko‘rsatadi.
+9. Yuqoridagi ⬇ belgisi paydo bo‘lsa, MDni ilova sifatida o‘rnatish mumkin.
+10. Offline holatda yuqori panelda sariq belgi chiqadi.

@@ -1,0 +1,57 @@
+<%- include('../partials/head') %><%- include('../partials/sidebar') %><div class="app"><%- include('../partials/topbar') %><main class="content"><%- include('../partials/flash') %>
+<section class="public-profile-hero panel">
+  <div class="profile-aura-avatar"><%- include('../partials/avatar', { user:target, size:'xl' }) %></div>
+  <div class="grow">
+    <span class="eyebrow">ICHKI PROFIL • <%= roleLabels[target.role] || target.role %></span>
+    <h1><%= target.fullName %></h1>
+    <p><%= target.bio || roleProfile?.subtitle || 'Profil tavsifi hali kiritilmagan.' %></p>
+    <div class="profile-tags">
+      <span><%= roleLabels[target.role] || target.role %></span>
+      <% if(target.position){ %><span><%= target.position %></span><% } %>
+      <% if(target.faculty){ %><span><%= target.faculty %></span><% } %>
+      <% if(target.department){ %><span><%= target.department %></span><% } %>
+      <% if(student?.group){ %><span><%= student.group %></span><% } %>
+    </div>
+  </div>
+  <div class="hero-actions">
+    <% if(access.self){ %><a class="primary" href="/profile/edit">Profilni tahrirlash</a><% } %>
+    <% if(student && access.academic){ %><a class="secondary" href="/students/<%= student._id %>">Akademik profil →</a><% } %>
+  </div>
+</section>
+
+<section class="profile-visibility-note"><span>◉</span><div><b>Vakolatga asoslangan ko‘rinish</b><p>Profil foydalanuvchining vakolat darajasiga qarab tuziladi. Sizga faqat ko‘rishga ruxsat etilgan ma’lumotlar ko‘rsatiladi.</p></div></section>
+
+<% if(roleMismatch){ %>
+<section class="profile-role-warning panel">
+  <div><span class="eyebrow">PROFIL MA’LUMOTLARI</span><h2>Magistrant roli bor, lekin akademik profil biriktirilmagan</h2><p>Bu hisob tizim bazasida <b>Magistrant</b> rolida saqlangan. Agar bu rahbariyat yoki xodim hisobi bo‘lsa, foydalanuvchi rolini foydalanuvchilar bo‘limida to‘g‘rilash kerak.</p></div>
+  <% if(canCorrectRole){ %><a class="primary" href="/users/<%= target._id %>/edit">Rolni to‘g‘rilash →</a><% } %>
+</section>
+<% } %>
+
+<% if(student){ %>
+<section class="kpi-grid profile-kpis">
+  <article class="kpi" data-card-href="/students/<%= student._id %>"><span>ILMIY PORTFEL</span><strong><%= portfolio.stats.total %></strong><small>Tasdiqlangan faoliyat</small></article>
+  <article class="kpi"><span>MAQOLA</span><strong><%= portfolio.stats.publications %></strong></article>
+  <article class="kpi"><span>KONFERENSIYA</span><strong><%= portfolio.stats.conferences %></strong></article>
+  <article class="kpi"><span>GURUH</span><strong class="textual-stat"><%= student.group || '—' %></strong></article>
+  <% if(access.academic){ %><article class="kpi"><span>DISSERTATSIYA</span><strong><%= student.dissertationProgress || 0 %>%</strong></article><article class="kpi"><span>REJA</span><strong><%= student.individualPlan || 0 %>%</strong></article><% } %>
+</section>
+<section class="grid-2">
+  <article class="panel"><div class="panel-head"><div><span class="eyebrow">AKADEMIK MA’LUMOTLAR</span><h2>Magistrant ma’lumotlari</h2></div></div><dl class="details"><dt>Mutaxassislik</dt><dd><%= student.specialty || '—' %></dd><dt>Guruh</dt><dd><%= student.group || '—' %></dd><dt>Kurs</dt><dd><%= student.course || '—' %></dd><dt>Dissertatsiya mavzusi</dt><dd><%= student.dissertationTitle || '—' %></dd><dt>Ilmiy rahbar</dt><dd><%= student.supervisor?.fullName || 'Biriktirilmagan' %></dd><% if(access.academic){ %><dt>Davomat</dt><dd><%= student.attendance %>%</dd><dt>O‘zlashtirish</dt><dd><%= student.academicScore %>%</dd><dt>Hujjatlar</dt><dd><%= student.documentsCompleteness %>%</dd><% } %></dl></article>
+  <article class="panel"><div class="panel-head"><div><span class="eyebrow">TASDIQLANGAN PORTFEL</span><h2>Faoliyat lentasi</h2></div></div><div class="profile-activity-feed"><% portfolio.items.slice(0,8).forEach(item=>{ %><article><i></i><div><span><%= item.typeLabel %></span><b><%= item.title %></b><small><%= item.organization || 'MD' %> · <%= item.date ? new Date(item.date).toLocaleDateString('uz-UZ') : '—' %></small></div><% if(item.url){ %><a href="<%= item.url %>" target="_blank" rel="noopener">↗</a><% } %></article><% }) %><% if(!portfolio.items.length){ %><div class="empty">Tasdiqlangan ilmiy faoliyat hali yo‘q.</div><% } %></div></article>
+</section>
+<% } else if(roleProfile){ %>
+<section class="role-profile-heading"><div><span class="eyebrow"><%= (roleLabels[target.role] || target.role).toUpperCase() %></span><h2><%= roleProfile.subtitle %></h2></div></section>
+<section class="kpi-grid profile-kpis role-aware-kpis">
+  <% roleProfile.stats.forEach(s=>{ %>
+    <article class="kpi" <% if(s.href){ %>data-card-href="<%= s.href %>"<% } %>><span><%= s.label %></span><strong><%= s.value %><%= s.suffix || '' %></strong><% if(s.href){ %><small>Batafsil →</small><% } %></article>
+  <% }) %>
+</section>
+<section class="grid-2 role-profile-grid">
+  <article class="panel"><div class="panel-head"><div><span class="eyebrow">LAVOZIM VA FAOLIYAT</span><h2>Rolga mos ma’lumotlar</h2></div></div><dl class="details"><% roleProfile.details.forEach(row=>{ %><dt><%= row[0] %></dt><dd><%= row[1] %></dd><% }) %></dl></article>
+  <article class="panel"><div class="panel-head"><div><span class="eyebrow">BOG‘LANGAN FOYDALANUVCHILAR</span><h2>Bog‘langan shaxslar</h2></div><span class="badge"><%= roleProfile.related.length %></span></div><div class="people-profile-grid"><% roleProfile.related.forEach(person=>{ %><a class="people-chip" href="/profile/<%= person._id %>"><%- include('../partials/avatar', { user:person, size:'sm' }) %><span><b><%= person.fullName %></b><small><%= roleLabels[person.role] || person.role %></small></span><em>→</em></a><% }) %><% if(!roleProfile.related.length){ %><div class="empty">Bog‘langan ichki profillar hozircha yo‘q.</div><% } %></div></article>
+</section>
+<% } %>
+
+<% if(access.contact){ %><section class="panel"><div class="panel-head"><div><span class="eyebrow">ALOQA MA’LUMOTLARI</span><h2>Kontaktlar</h2></div><span class="access-tag">Sizga ochiq</span></div><dl class="details compact-details"><dt>Telefon</dt><dd><%= target.phone || student?.phone || '—' %></dd><dt>E-mail</dt><dd><%= target.email || student?.email || '—' %></dd><% if(target.office){ %><dt>Xona / ofis</dt><dd><%= target.office %></dd><% } %></dl></section><% } %>
+</main></div><%- include('../partials/foot') %>

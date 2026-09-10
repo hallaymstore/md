@@ -1,0 +1,24 @@
+{
+  "id": "/",
+  "name": "MD",
+  "short_name": "MD",
+  "description": "Magistratura boshqaruvi, nazorat va ilmiy faoliyat uchun ichki platforma",
+  "lang": "uz",
+  "start_url": "/dashboard?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f4fbf7",
+  "theme_color": "#169b68",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {"src":"/static/icons/md-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"/static/icons/md-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ],
+  "shortcuts": [
+    {"name":"Boshqaruv paneli","short_name":"Bosh sahifa","url":"/dashboard","icons":[{"src":"/static/icons/md-192.png","sizes":"192x192"}]},
+    {"name":"Muddatlar markazi","short_name":"Muddatlar","url":"/md/deadlines","icons":[{"src":"/static/icons/md-192.png","sizes":"192x192"}]},
+    {"name":"Muammo va chora","short_name":"Chora","url":"/md/interventions","icons":[{"src":"/static/icons/md-192.png","sizes":"192x192"}]}
+  ]
+}

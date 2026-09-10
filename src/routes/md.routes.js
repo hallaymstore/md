@@ -1,0 +1,13 @@
+const router=require('express').Router();
+const c=require('../controllers/md.controller');
+const {requireAuth,requireRole}=require('../middleware/auth');
+const editors=['superadmin','tech','management','magistracy','dean','department','supervisor','teacher'];
+router.get('/advantages',requireAuth,c.advantages);
+router.get('/deadlines',requireAuth,c.deadlines);
+router.get('/interventions',requireAuth,c.interventions);
+router.post('/interventions',requireRole(...editors),c.createIntervention);
+router.post('/interventions/:id',requireRole(...editors,'student'),c.updateIntervention);
+router.get('/graduation',requireAuth,c.graduation);
+router.post('/graduation/:studentId/:key',requireRole('superadmin','tech','magistracy','dean','department','supervisor'),c.saveGraduation);
+router.get('/trends',requireAuth,c.trends);
+module.exports=router;

@@ -1,85 +1,57 @@
-# MD QDTU — v2.5 approval workflow xaritasi
+# QDTU Magistratura 360 v2.7 — Magistracy Intelligence Architecture
 
-## Asosiy tamoyil
-Magistratura bo‘limi xodimlari barcha source va ilmiy ishlarni qo‘lda yig‘ib yurmaydi. Magistrant o‘z materialini o‘zi ariza qilib yuboradi; akademik tasdiqlash tizim bo‘ylab rol va tashkilot scope asosida yuradi.
+## Platforma chegarasi
 
-## Approval pipeline
+HEMIS bilan raqobatlashuvchi umumiy LMS emas. Platforma magistratura bo‘limining operatsion qaror, nazorat va ilmiy workflow tizimi sifatida qurilgan.
 
-### Oddiy ilmiy material
-1. Magistrant yuboradi.
-2. Ilmiy rahbar ko‘radi, sharh beradi: approve / revision / reject.
-3. Approve bo‘lsa kafedra mudiriga.
-4. Kafedra mudiri approve / revision / reject.
-5. Approve bo‘lsa dekanatga.
-6. Dekanat approve / revision / reject.
-7. Approve bo‘lsa Magistratura bo‘limiga.
-8. Magistratura approve qilsa yakuniy `approved`.
+### HEMISdan olinadigan asosiy ma’lumotlar
+- magistrant kontingenti;
+- akademik struktura;
+- kurs/guruh;
+- davomat va o‘zlashtirish kabi bazaviy indikatorlar.
 
-### Yuqori darajadagi material
-`dissertation`, `thesis`, `defense` turlari Magistratura tasdig‘idan keyin **Universitet rahbariyati** bosqichiga o‘tadi.
+### QDTU 360da boshqariladigan magistratura-specific ma’lumotlar
+- ilmiy rahbar yuklamasi;
+- dissertatsiya 12 bosqich timeline;
+- ilmiy ariza approval chain;
+- reviewer sharhlari, revision va audit history;
+- risk/intervention registri;
+- social academic portfolio;
+- evidence/source fayllar;
+- muammo → task → deadline → resolution;
+- bitiruv readiness;
+- guruh live drill-down.
 
-## Revision mexanizmi
-Reviewer `Qayta ishlashga qaytarish` qilganda:
-- `returnStage` saqlanadi;
-- ariza `student / needs_revision` holatiga o‘tadi;
-- magistrant tavsiyalarni ko‘radi;
-- yangi fayl(lar) qo‘shishi, nom/mazmun/havolani yangilashi mumkin;
-- revision +1 bo‘ladi;
-- ariza boshidan emas, aynan qaytargan reviewer bosqichiga boradi.
+## Role matrix
 
-Eski fayllar revision tarixi uchun saqlanadi.
-
-## Approval visibility
-| Rol | Ko‘rish | Qaror |
+| Rol | Scope | Asosiy panel |
 |---|---|---|
-| Superadmin | Barcha ariza | Har qanday joriy bosqichda override + metadata/delete |
-| Tech | Barcha ariza | Yo‘q; operatsion kuzatuv/sharh |
-| Management | Barcha, executive | Faqat `management` bosqichi |
-| Magistracy | Barcha magistratura arizalari | Faqat `magistracy` bosqichi |
-| Dean | O‘z fakulteti | Faqat `dean` bosqichi |
-| Department | O‘z kafedrasi | Faqat `department` bosqichi |
-| Supervisor | O‘z magistrantlari | Faqat `supervisor` bosqichi |
-| Teacher | Approval workflow yo‘q | Yo‘q |
-| Student | Faqat o‘zi yaratgan | Yangi/resubmit; akademik qaror yo‘q |
+| Superadmin | Global | Governance + control + audit |
+| Tech | Global operational | Texnik boshqaruv |
+| Management | Global read/approval | Executive analytics |
+| Magistracy | Global magistratura | 360 operations |
+| Dean | Faculty | Fakultet dashboard |
+| Department | Department | Kafedra dashboard |
+| Supervisor | Assigned students | Ilmiy rahbar dashboard |
+| Teacher | Department | O‘quv/monitoring dashboard |
+| Student | Self | Self-service + portfolio |
 
-## Audit trail
-Har event:
-- actor user + role;
-- stage;
-- action;
-- comment;
-- fromStage / toStage;
-- revision;
-- timestamp.
+## Research approval
+Magistrant → Ilmiy rahbar → Kafedra → Dekanat → Magistratura → Rahbariyat → Approved.
 
-## Student-first source upload
-Ariza yaratishda:
-- material turi;
-- nomi;
-- mazmuni;
-- jurnal/tashkilot;
-- sana;
-- kalit so‘zlar;
-- link;
-- 1–5 ta source/hujjat;
-- ilmiy rahbarga izoh.
+`changes_requested` arizani studentga qaytaradi va `resumeStage` orqali aynan qaytargan bosqichdan davom etadi. Har qaror audit/historyga yoziladi.
 
-Fayllar mavjud `Upload` repositoryga ham yoziladi va student/faculty/department bilan bog‘lanadi.
+## Risk engine
+Risk score rules are explainable, not opaque AI. Har bir risk sababi foydalanuvchiga ko‘rsatiladi. Bu keyinchalik ML model bilan almashtirilishi mumkin, lekin operatsion qaror uchun hozir ham tushunarli.
 
-## Dashboard integratsiyasi
-Student, supervisor, department, dean, magistracy, management, tech va superadmin dashboardlarida ariza navbati va statistikasi ko‘rinadi. Sidebar/topbar pending badge mavjud.
+## HEMIS Bridge
+CSV preview/import. Upsert student ID bo‘yicha, fallback F.I.Sh.+guruh. HEMIS yangilanishi platformaga xos ilmiy va workflow ma’lumotlarini overwrite qilmaydi.
 
-## Global admin control
-`/control` ichida SubmissionApplication soni va pending soni ko‘rinadi. Global qidiruv ariza nomi, description, fakultet, kafedra va guruhdan ham topadi. Student delete cascade arizalarni ham tozalaydi.
-
-## Saqlangan modullar
-- Master academic data
-- Magistrantlar bazasi va quick-entry
-- Self-profile va privacy visibility
-- Davomat/o‘zlashtirish/individual reja
-- Dissertatsiya 12 bosqich
-- Seminar/hujjat/task monitoring
-- Ilmiy portfel
-- Global control/audit/data quality
-- Kunduzgi/tungi theme
-- Responsive compact premium UI
+## Production roadmap
+- rasmiy HEMIS API bo‘lsa API sync adapter;
+- R2/S3/MinIO protected object storage;
+- CSRF + rate limit + antivirus scanning;
+- scheduled snapshot/trend analytics;
+- Telegram/e-mail notification adapter;
+- rector/prorector KPI wallboard;
+- data retention va backup policy.

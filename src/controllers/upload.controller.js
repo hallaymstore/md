@@ -13,7 +13,7 @@ exports.index = async (req, res, next) => {
     else if (req.user.role === 'department') uploadQuery = { $or: [{ department: req.user.department }, { student: { $in: studentIds } }] };
     else if (['supervisor','teacher','student'].includes(req.user.role)) uploadQuery = { student: { $in: studentIds } };
     const uploads = await Upload.find(uploadQuery).populate('uploadedBy','fullName role').populate('student','fullName').sort({ createdAt: -1 }).limit(150).lean();
-    res.render('uploads/index', { title: 'Source va hujjatlar', uploads, students });
+    res.render('uploads/index', { title: 'Materiallar va hujjatlar', uploads, students });
   } catch (e) { next(e); }
 };
 

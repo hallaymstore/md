@@ -1,0 +1,35 @@
+<section class="live-overview" data-live-stats data-live-url="/dashboard/live">
+  <div class="live-overview-head">
+    <div>
+      <span class="eyebrow"><%= currentUser.role === 'student' ? 'MENING JONLI KO‘RSATKICHLARIM' : 'JONLI MAGISTRANTLAR STATISTIKASI' %></span>
+      <h1><%= currentUser.role === 'student' ? 'O‘quv holatim bir qarashda' : 'Magistrantlar bir qarashda' %></h1>
+      <p><%= currentUser.role === 'student' ? 'Ko‘rsatkichlar monitoring ma’lumotlari bilan avtomatik yangilanadi.' : 'Asosiy raqamlar avtomatik yangilanadi. Guruhni bosing — tarkibi va alohida statistikasi ochiladi.' %></p>
+    </div>
+    <div class="live-state is-online" data-live-status role="status" aria-live="polite"><i></i><span>Jonli</span></div>
+  </div>
+
+  <% if(currentUser.role === 'student'){ %>
+    <div class="headline-kpi-grid student-live-kpis">
+      <article class="headline-kpi primary-stat" data-card-href="/students"><span>DAVOMAT</span><strong data-live-key="averages.attendance"><%= kpis.attendance %>%</strong><small>joriy monitoring</small></article>
+      <article class="headline-kpi" data-card-href="/students"><span>INDIVIDUAL REJA</span><strong data-live-key="averages.plan"><%= kpis.plan %>%</strong><small>bajarilish</small></article>
+      <article class="headline-kpi" data-card-href="/milestones"><span>DISSERTATSIYA</span><strong data-live-key="averages.dissertation"><%= kpis.dissertation %>%</strong><small>bajarilish</small></article>
+      <article class="headline-kpi" data-card-href="/science"><span>ILMIY FAOLLIK</span><strong data-live-key="averages.science"><%= kpis.science %>%</strong><small>tasdiqlangan ishlar</small></article>
+    </div>
+    <div class="student-live-foot"><span><i></i> Profil va monitoring bog‘langan bo‘lsa ko‘rsatkichlar jonli tarzda yangilanadi.</span><a href="/profile">Ichki profilim →</a></div>
+  <% } else { %>
+    <div class="headline-kpi-grid">
+      <article class="headline-kpi primary-stat" data-card-href="/students"><span>JAMI MAGISTRANT</span><strong data-live-key="total"><%= kpis.total %></strong><small>ko‘rinayotgan doira bo‘yicha</small></article>
+      <article class="headline-kpi" data-card-href="/students?course=1"><span>1-KURS</span><strong data-live-key="course1"><%= kpis.course1 %></strong><small>magistrant</small></article>
+      <article class="headline-kpi" data-card-href="/students?course=2"><span>2-KURS</span><strong data-live-key="course2"><%= kpis.course2 %></strong><small>magistrant</small></article>
+      <article class="headline-kpi" data-card-href="#live-groups"><span>GURUHLAR</span><strong data-live-key="groupCount"><%= groupStats.length %></strong><small>faol ro‘yxat</small></article>
+    </div>
+
+    <div class="group-overview-head" id="live-groups">
+      <div><span class="eyebrow">GURUHLAR KESIMI</span><h2>Guruhni tanlang</h2></div>
+      <% if (groupStats.length > 4) { %><label class="compact-search"><span class="sr-only">Guruhni qidirish</span><input type="search" placeholder="Guruhni qidiring…" data-group-search autocomplete="off"></label><% } %>
+    </div>
+    <% if (groupStats.length) { %><div class="group-stat-grid" data-group-grid>
+      <% groupStats.forEach(group => { %><a class="group-stat-card <%= group.red ? 'has-risk' : '' %>" href="/dashboard/groups/<%= encodeURIComponent(group.name) %>" data-live-group="<%= group.name %>" data-group-search-item="<%= group.name.toLocaleLowerCase('uz-UZ') %>"><div class="group-stat-top"><span class="group-icon">G</span><span class="status <%= group.red ? 'red' : 'green' %>"><b data-group-key="red"><%= group.red %></b> muammoli</span></div><h3><%= group.name %></h3><p><b data-group-key="total"><%= group.total %></b> magistrant · 1-kurs <b data-group-key="course1"><%= group.course1 %></b> · 2-kurs <b data-group-key="course2"><%= group.course2 %></b></p><div class="group-readiness"><span><i data-group-progress style="width:<%= group.readiness %>%"></i></span><b data-group-key="readiness"><%= group.readiness %>%</b></div><small>Talabalar va statistika →</small></a><% }) %>
+    </div><% } else { %><div class="simple-empty">Hozircha guruh biriktirilgan magistrant yo‘q.</div><% } %>
+  <% } %>
+</section>

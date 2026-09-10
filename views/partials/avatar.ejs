@@ -1,0 +1,4 @@
+<% const __u = (typeof user !== 'undefined' && user) ? user : currentUser; const __size = (typeof size !== 'undefined' && size) ? size : 'md'; const __role = __u?.role || 'student'; const __glyph = {superadmin:'✦',tech:'⌘',management:'◆',magistracy:'M',dean:'D',department:'K',supervisor:'R',teacher:'O',student:'M'}[__role] || ((__u?.fullName||'?').charAt(0).toUpperCase()); %>
+<span class="role-avatar role-avatar-<%= __size %> role-avatar-<%= __role %>" data-role-avatar data-role="<%= __role %>" aria-label="<%= __u?.fullName || 'Profil' %>">
+  <% if(__u?.avatarPath){ %><img src="<%= __u.avatarPath %>" alt="<%= __u.fullName || 'Profil rasmi' %>" loading="lazy"><% } else { %><span class="role-avatar-glyph"><%= __glyph %></span><% } %>
+</span>

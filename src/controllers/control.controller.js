@@ -11,7 +11,8 @@ const DocumentRecord = require('../models/DocumentRecord');
 const AuditLog = require('../models/AuditLog');
 const AcademicStructure = require('../models/AcademicStructure');
 const AcademicUnit = require('../models/AcademicUnit');
-const SubmissionApplication = require('../models/SubmissionApplication');
+const ResearchSubmission = require('../models/ResearchSubmission');
+const Notification = require('../models/Notification');
 const audit = require('../services/audit');
 
 const ENTITY = {
@@ -37,7 +38,7 @@ const rx=v=>new RegExp(String(v).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i');
 async function counts(){
   const now=new Date(); const day=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const [users,activeUsers,students,redStudents,uploads,tasks,openTasks,seminars,science,documents,monitoring,structures,academicUnits,submissions,pendingSubmissions,auditToday]=await Promise.all([
-    User.countDocuments(),User.countDocuments({active:true}),Student.countDocuments(),Student.countDocuments({status:'red'}),Upload.countDocuments(),Task.countDocuments(),Task.countDocuments({status:{$in:['new','in_progress']}}),Seminar.countDocuments(),ScientificActivity.countDocuments(),DocumentRecord.countDocuments(),MonitoringItem.countDocuments(),AcademicStructure.countDocuments(),AcademicUnit.countDocuments(),SubmissionApplication.countDocuments(),SubmissionApplication.countDocuments({status:'in_review'}),AuditLog.countDocuments({createdAt:{$gte:day}})
+    User.countDocuments(),User.countDocuments({active:true}),Student.countDocuments(),Student.countDocuments({status:'red'}),Upload.countDocuments(),Task.countDocuments(),Task.countDocuments({status:{$in:['new','in_progress']}}),Seminar.countDocuments(),ScientificActivity.countDocuments(),DocumentRecord.countDocuments(),MonitoringItem.countDocuments(),AcademicStructure.countDocuments(),AcademicUnit.countDocuments(),ResearchSubmission.countDocuments(),ResearchSubmission.countDocuments({status:'under_review'}),AuditLog.countDocuments({createdAt:{$gte:day}})
   ]);
   return {users,activeUsers,students,redStudents,uploads,tasks,openTasks,seminars,science,documents,monitoring,structures,academicUnits,submissions,pendingSubmissions,auditToday};
 }
@@ -54,13 +55,13 @@ async function searchAll(q,user){
     DocumentRecord.find({$or:[{title:re},{notes:re}]}).select('title type status').limit(10).lean(),
     Upload.find({$or:[{originalName:re},{description:re},{faculty:re},{department:re}]}).select('originalName category createdAt').limit(10).lean(),
     MonitoringItem.find({$or:[{title:re},{comment:re}]}).select('title type status percent').limit(10).lean(),
-    SubmissionApplication.find({$or:[{title:re},{description:re},{faculty:re},{department:re},{group:re}]}).select('title type status currentStage revision').limit(12).lean()
+    ResearchSubmission.find({$or:[{applicationNo:re},{title:re},{abstract:re},{faculty:re},{department:re}]}).select('applicationNo title status currentStage').limit(12).lean()
   ]);
   const out=[];
   users.forEach(x=>out.push({entity:'user',id:x._id,title:x.fullName,meta:`${x.role} · ${x.active?'faol':'blok'}`,href:`/users/${x._id}/edit`}));
   students.forEach(x=>out.push({entity:'student',id:x._id,title:x.fullName,meta:`${x.studentId||'ID yo‘q'} · ${x.faculty||'—'} · ${x.group||'—'}`,href:`/students/${x._id}`}));
   for(const [type,rows] of Object.entries({task:tasks,seminar:seminars,science,document:documents,upload:uploads,monitoring})) rows.forEach(x=>out.push({entity:type,id:x._id,title:x.title||x.originalName,meta:`${x.status||x.category||x.type||''}`,href:`/control/${type}/${x._id}`}));
-  submissions.forEach(x=>out.push({entity:'submission',id:x._id,title:x.title,meta:`${x.status} · ${x.currentStage} · rev.${x.revision}`,href:`/submissions/${x._id}`}));
+  submissions.forEach(x=>out.push({entity:'submission',id:x._id,title:`${x.applicationNo} · ${x.title}`,meta:`${x.status} · ${x.currentStage}`,href:`/submissions/${x._id}`}));
   return out;
 }
 
@@ -80,9 +81,10 @@ exports.index=async(req,res,next)=>{
       noEmail:await Student.countDocuments({$or:[{email:''},{email:null},{email:{$exists:false}}]}),
       lowProfile:await Student.countDocuments({profileCompleteness:{$lt:50}}),
       noDissertation:await Student.countDocuments({$or:[{dissertationTitle:''},{dissertationTitle:null},{dissertationTitle:{$exists:false}}]}),
-      missingDocs:await DocumentRecord.countDocuments({status:'missing'})
+      missingDocs:await DocumentRecord.countDocuments({status:'missing'}),
+      submissionNoSupervisor:await ResearchSubmission.countDocuments({status:{$in:['draft','changes_requested']},$or:[{supervisor:null},{supervisor:{$exists:false}}]})
     };
-    res.render('control/index',{title:req.user.role==='superadmin'?'Bosh administrator markazi':'Texnik boshqaruv markazi',stats,recentAudit,recentStudents,recentUploads,quality,q,results,isSuperadmin:req.user.role==='superadmin'});
+    res.render('control/index',{title:req.user.role==='superadmin'?'Bosh administrator markazi':'Tizim boshqaruv markazi',stats,recentAudit,recentStudents,recentUploads,quality,q,results,isSuperadmin:req.user.role==='superadmin'});
   }catch(e){next(e);}
 };
 
@@ -129,17 +131,18 @@ exports.remove=async(req,res,next)=>{
     const entity=req.params.entity;
     if(entity==='student'){
       const student=await Student.findById(req.params.id); if(!student)return res.redirect('/control');
-      await Promise.all([MonitoringItem.deleteMany({student:student._id}),Task.deleteMany({student:student._id}),ScientificActivity.deleteMany({student:student._id}),DocumentRecord.deleteMany({student:student._id}),SubmissionApplication.deleteMany({student:student._id})]);
+      const submissionIds=await ResearchSubmission.find({student:student._id}).distinct('_id');
+      await Promise.all([MonitoringItem.deleteMany({student:student._id}),Task.deleteMany({student:student._id}),ScientificActivity.deleteMany({student:student._id}),DocumentRecord.deleteMany({student:student._id})]);
       const uploads=await Upload.find({student:student._id});
-      for(const u of uploads){if(u.storedName){const fp=path.join(__dirname,'../../public/uploads',u.storedName);try{fs.unlinkSync(fp)}catch(_){}}}
-      await Upload.deleteMany({student:student._id}); await student.deleteOne();
+      for(const u of uploads){if(u.storedName){const root=u.storageScope==='protected'?path.join(__dirname,'../../storage/submissions'):path.join(__dirname,'../../public/uploads');const fp=path.join(root,path.basename(u.storedName));try{fs.unlinkSync(fp)}catch(_){}}}
+      await Promise.all([Upload.deleteMany({student:student._id}),ResearchSubmission.deleteMany({student:student._id}),Notification.deleteMany({submission:{$in:submissionIds}})]); await student.deleteOne();
       await audit(req,'ADMIN_STUDENT_DELETED','Student',req.params.id,{cascade:true});
-      req.session.flash={type:'success',text:'Magistrant va unga bog‘langan monitoring/hujjat yozuvlari o‘chirildi.'};return res.redirect('/control');
+      req.session.flash={type:'success',text:'Magistrant va unga bog‘langan monitoring, ariza, bildirishnoma hamda fayllar o‘chirildi.'};return res.redirect('/control');
     }
     const cfg=ENTITY[entity]; if(!cfg)return res.status(404).render('errors/404',{title:'Ma’lumot turi topilmadi'});
     const item=await cfg.Model.findById(req.params.id); if(!item)return res.redirect('/control');
     const relatedStudent=item.student;
-    if(entity==='upload'&&item.storedName){const fp=path.join(__dirname,'../../public/uploads',item.storedName);try{fs.unlinkSync(fp)}catch(_){} await DocumentRecord.updateMany({upload:item._id},{$unset:{upload:1}});}
+    if(entity==='upload'&&item.storedName){const root=item.storageScope==='protected'?path.join(__dirname,'../../storage/submissions'):path.join(__dirname,'../../public/uploads');const fp=path.join(root,path.basename(item.storedName));try{fs.unlinkSync(fp)}catch(_){} await DocumentRecord.updateMany({upload:item._id},{$unset:{upload:1}});await ResearchSubmission.updateMany({attachments:item._id},{$pull:{attachments:item._id}});}
     await item.deleteOne();
     if(entity==='science'&&relatedStudent){const rows=await ScientificActivity.find({student:relatedStudent}).lean();const score=rows.length?Math.min(100,Math.round(rows.reduce((n,x)=>n+Number(x.score||0),0)/rows.length)):0;const st=await Student.findById(relatedStudent);if(st){st.scientificActivity=score;st.recalculateStatus();await st.save();}}
     if(entity==='document'&&relatedStudent){const docs=await DocumentRecord.find({student:relatedStudent}).lean();const required=['individual_plan','dissertation_topic','supervisor_info','seminar_minutes','report','publication','conference','attestation','defense'];const ok=docs.filter(d=>required.includes(d.type)&&d.status==='present').length;const st=await Student.findById(relatedStudent);if(st){st.documentsCompleteness=Math.round(ok/required.length*100);st.recalculateStatus();await st.save();}}

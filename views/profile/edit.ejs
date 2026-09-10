@@ -1,0 +1,32 @@
+<%- include('../partials/head') %><%- include('../partials/sidebar') %><div class="app"><%- include('../partials/topbar') %><main class="content narrow"><%- include('../partials/flash') %>
+<section class="profile-editor-hero panel motion-panel">
+  <div class="profile-editor-avatar"><%- include('../partials/avatar', { user:target, size:'xl' }) %></div>
+  <div class="grow"><span class="eyebrow">MENING PROFILIM</span><h1><%= target.fullName %></h1><p><%= roleLabels[target.role] || target.role %> · Profil rasmi barcha ichki sahifalarda ishlatiladi. Rasm bo‘lmasa rolga mos standart ikon ko‘rsatiladi.</p></div>
+  <a class="secondary" href="/profile/<%= target._id %>">Profilni ko‘rish →</a>
+</section>
+<section class="grid-2 profile-settings-grid">
+  <article class="panel motion-panel"><div class="panel-head"><div><span class="eyebrow">PROFIL RASMI</span><h2>Avatarni yangilash</h2></div></div>
+    <form action="/profile/avatar" method="post" enctype="multipart/form-data" class="avatar-upload-form" data-avatar-form>
+      <label class="avatar-dropzone" data-avatar-dropzone><input type="file" name="avatar" accept="image/jpeg,image/png,image/webp" required data-avatar-input><span>Rasm tanlang</span><small>JPG / PNG / WEBP · maksimum 3 MB</small><img data-avatar-preview hidden alt="Preview"></label>
+      <div class="form-actions"><button class="primary">Rasmni saqlash</button></div>
+    </form>
+    <% if(target.avatarPath){ %><form action="/profile/avatar/remove" method="post" onsubmit="return confirm('Profil rasmini olib tashlaysizmi?')"><button class="ghost full">Standart rol ikoniga qaytish</button></form><% } %>
+  </article>
+  <article class="panel motion-panel"><div class="panel-head"><div><span class="eyebrow">ICHKI PROFIL KO‘RINISHI</span><h2>Qisqa ma’lumot</h2></div></div>
+    <form action="/profile/edit" method="post" class="form-grid">
+      <label>Telefon<input name="phone" value="<%= target.phone || '' %>" placeholder="+998 ..."></label>
+      <label>E-mail<input type="email" name="email" value="<%= target.email || '' %>"></label>
+      <% if(target.role!=='student'){ %>
+      <label>Lavozim<input name="position" value="<%= target.position || '' %>" placeholder="Masalan: prorektor, bo‘lim boshlig‘i, dotsent"></label>
+      <label>Xona / ofis<input name="office" value="<%= target.office || '' %>" placeholder="Masalan: A bino, 204-xona"></label>
+      <label>Ilmiy daraja<input name="academicDegree" value="<%= target.academicDegree || '' %>" placeholder="PhD, DSc ..."></label>
+      <label>Ilmiy unvon<input name="academicTitle" value="<%= target.academicTitle || '' %>" placeholder="Dotsent, professor ..."></label>
+      <% } %>
+      <label class="wide">O‘zingiz haqingizda<textarea name="bio" maxlength="320" placeholder="Lavozim, ilmiy yo‘nalish yoki qisqa professional ma’lumot"><%= target.bio || '' %></textarea></label>
+      <div class="form-actions wide"><button class="primary">Profilni saqlash</button></div>
+    </form>
+    <div class="privacy-note compact"><b>Ko‘rinish:</b><span>F.I.Sh., rol, avatar, fakultet/kafedra va bio ichki profilda ko‘rinadi. Telefon va e-mail faqat tegishli vakolatga ega foydalanuvchilarga ochiladi.</span></div>
+  </article>
+</section>
+<% if(target.role==='student'){ %><section class="quick-note"><div><b>Magistrant akademik ma’lumotlari</b><p>Guruh, mutaxassislik, dissertatsiya va monitoring ko‘rsatkichlari alohida akademik profil orqali boshqariladi.</p></div><a class="secondary" href="/students/me/profile">Akademik ma’lumotlar →</a></section><% } %>
+</main></div><%- include('../partials/foot') %>

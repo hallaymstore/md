@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="uz" data-display-theme="<%= displayTheme %>">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f4fbf7">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/static/css/display.css?v=2.9.1-presentation-green">
+</head>
+<body class="display-body <%= kioskMode ? 'is-kiosk' : '' %>">
+  <div class="display-bg" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="display-scan" aria-hidden="true"></div>
+
+  <div class="display-shell" data-display-root data-live-url="/display/live">
+    <header class="display-header">
+      <div class="display-brand">
+        <div class="display-logo">MD</div>
+        <div><strong><%= displayTitle %></strong><span><%= displaySubtitle %></span></div>
+      </div>
+      <div class="display-header-center">
+        <span class="display-live is-online" data-display-status><i></i><b>JONLI</b><em>ma’lumotlar yangilanmoqda</em></span>
+      </div>
+      <div class="display-clock">
+        <strong data-display-clock>--:--</strong>
+        <span data-display-date>--</span>
+      </div>
+    </header>
+
+    <main class="display-main">
+      <section class="display-hero">
+        <div class="display-title-block">
+          <span class="display-kicker">MD • JONLI MONITORING</span>
+          <h1>Magistratura holati <b>bir qarashda</b></h1>
+          <p>Kontingent, ilmiy faollik va bitiruv tayyorgarligi yagona katta ekranda.</p>
+        </div>
+        <div class="display-updated"><span>Oxirgi sinxronizatsiya</span><strong data-display-updated>--:--:--</strong></div>
+      </section>
+
+      <section class="display-count-grid" aria-label="Asosiy raqamlar">
+        <article class="display-count-card is-primary"><span>JAMI MAGISTRANT</span><strong data-key="total"><%= displayData.total %></strong><small>faol kontingent</small><i class="card-orbit" aria-hidden="true"></i></article>
+        <article class="display-count-card"><span>1-KURS</span><strong data-key="course1"><%= displayData.course1 %></strong><small>magistrant</small><i class="card-orbit" aria-hidden="true"></i></article>
+        <article class="display-count-card"><span>2-KURS</span><strong data-key="course2"><%= displayData.course2 %></strong><small>magistrant</small><i class="card-orbit" aria-hidden="true"></i></article>
+        <article class="display-count-card"><span>GURUHLAR</span><strong data-key="groups"><%= displayData.groups %></strong><small>faol guruh</small><i class="card-orbit" aria-hidden="true"></i></article>
+        <article class="display-count-card display-count-card--small"><span>MUTAXASSISLIK</span><strong data-key="specialties"><%= displayData.specialties %></strong><small>yo‘nalish</small></article>
+        <article class="display-count-card display-count-card--small"><span>ILMIY RAHBAR</span><strong data-key="supervisors"><%= displayData.supervisors %></strong><small>biriktirilgan</small></article>
+      </section>
+
+      <section class="display-ring-grid" aria-label="Asosiy foiz ko‘rsatkichlari">
+        <% const rings = [
+          ['attendance','DAVOMAT','Joriy o‘rtacha'],
+          ['plan','INDIVIDUAL REJA','Bajarilish'],
+          ['dissertation','DISSERTATSIYA','Umumiy progress'],
+          ['science','ILMIY FAOLLIK','Faollik indeksi'],
+          ['readiness','BITIRUV TAYYORLIGI','Tayyorlik indeksi']
+        ]; %>
+        <% rings.forEach(([key,label,sub]) => { const value = displayData.averages[key] || 0; %>
+          <article class="display-ring-card" data-ring-card="<%= key %>">
+            <div class="display-ring" data-ring-key="averages.<%= key %>" data-value="<%= value %>">
+              <svg viewBox="0 0 120 120" aria-hidden="true">
+                <circle class="display-ring-track" cx="60" cy="60" r="48"></circle>
+                <circle class="display-ring-progress" cx="60" cy="60" r="48"></circle>
+                <g class="display-ring-orbit"><circle cx="60" cy="12" r="3.2"></circle><circle cx="60" cy="108" r="1.8"></circle></g>
+              </svg>
+              <div class="display-ring-value"><strong><%= value %></strong><small>%</small></div>
+            </div>
+            <div class="display-ring-copy"><span><%= label %></span><strong data-ring-caption><%= value %>%</strong><small><%= sub %></small></div>
+          </article>
+        <% }) %>
+      </section>
+
+      <section class="display-lower-grid">
+        <article class="display-panel display-health-panel">
+          <header><div><span class="panel-kicker">HOLAT TAQSIMOTI</span><h2>Magistrantlar holati</h2></div><b class="panel-badge">LIVE</b></header>
+          <div class="health-row">
+            <div class="health-item health-good"><i></i><div><span>Barqaror</span><strong data-key="statuses.green"><%= displayData.statuses.green %></strong></div><em data-health-pct="green">0%</em></div>
+            <div class="health-item health-watch"><i></i><div><span>Nazoratda</span><strong data-key="statuses.yellow"><%= displayData.statuses.yellow %></strong></div><em data-health-pct="yellow">0%</em></div>
+            <div class="health-item health-risk"><i></i><div><span>Muammoli</span><strong data-key="statuses.red"><%= displayData.statuses.red %></strong></div><em data-health-pct="red">0%</em></div>
+          </div>
+          <div class="health-bar" aria-hidden="true"><i class="good" data-health-bar="green"></i><i class="watch" data-health-bar="yellow"></i><i class="risk" data-health-bar="red"></i></div>
+        </article>
+
+        <article class="display-panel display-science-panel">
+          <header><div><span class="panel-kicker">ILMIY EKOTIZIM</span><h2>Tasdiqlangan faollik</h2></div><b class="panel-badge panel-badge-blue" data-key="science.total"><%= displayData.science.total %></b></header>
+          <div class="science-grid">
+            <div><span>Maqola</span><strong data-key="science.publications"><%= displayData.science.publications %></strong><i>↗</i></div>
+            <div><span>Konferensiya</span><strong data-key="science.conferences"><%= displayData.science.conferences %></strong><i>✦</i></div>
+            <div><span>Tadqiqot</span><strong data-key="science.research"><%= displayData.science.research %></strong><i>◎</i></div>
+            <div><span>Ilmiy seminar</span><strong data-key="science.seminars"><%= displayData.science.seminars %></strong><i>◫</i></div>
+          </div>
+          <div class="workflow-strip"><span>Jarayonda <b data-key="workflow.reviewing"><%= displayData.workflow.reviewing %></b></span><span>Tasdiqlangan <b data-key="workflow.approved"><%= displayData.workflow.approved %></b></span><span>Tuzatishda <b data-key="workflow.revisions"><%= displayData.workflow.revisions %></b></span></div>
+        </article>
+      </section>
+
+      <section class="display-groups-panel">
+        <header><div><span class="panel-kicker">GURUHLAR KESIMI</span><h2>Faol guruhlar ko‘rsatkichlari</h2></div><span class="group-legend"><i></i> umumiy indeks</span></header>
+        <div class="display-group-grid" data-group-grid>
+          <% displayData.groupStats.forEach((group, index) => { %>
+            <article class="display-group-card <%= index === 0 ? 'is-spotlight' : '' %>" data-group="<%= group.name %>">
+              <div class="group-card-head"><strong><%= group.name %></strong><span><b data-group-key="total"><%= group.total %></b> talaba</span></div>
+              <div class="group-score"><b data-group-key="score"><%= group.score %></b><small>%</small></div>
+              <div class="group-track"><i data-group-progress style="--group-progress:<%= group.score %>%"></i></div>
+              <div class="group-meta"><span>Davomat <b data-group-key="attendance"><%= group.attendance %>%</b></span><span>Dissertatsiya <b data-group-key="dissertation"><%= group.dissertation %>%</b></span><span>Muammo <b data-group-key="risk"><%= group.risk %></b></span></div>
+            </article>
+          <% }) %>
+          <% if(!displayData.groupStats.length){ %><div class="display-empty">Hozircha guruh statistikasi mavjud emas.</div><% } %>
+        </div>
+      </section>
+    </main>
+
+    <footer class="display-footer">
+      <div class="display-ticker"><i></i><span>MD • Shaxsiy ma’lumotlar ko‘rsatilmaydi • Ko‘rsatkichlar avtomatik yangilanadi • <b data-footer-updated>jonli ulanish</b></span></div>
+      <div class="display-controls">
+        <button type="button" data-theme-display aria-label="Rang rejimini almashtirish">◐</button>
+        <button type="button" data-fullscreen aria-label="To‘liq ekran">⛶</button>
+      </div>
+    </footer>
+  </div>
+
+  <script id="displayInitialData" type="application/json"><%- JSON.stringify(displayData).replace(/</g,'\\u003c') %></script>
+  <script src="/static/js/display.js?v=2.9.1-presentation-green" defer></script>
+</body>
+</html>

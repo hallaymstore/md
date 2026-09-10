@@ -13,6 +13,12 @@ const taskSchema = new mongoose.Schema({
   dueDate: { type: Date, index: true },
   resolvedAt: Date,
   resolution: String,
+  issueReason: { type: String, trim: true, maxlength: 3000 },
+  actionPlan: { type: String, trim: true, maxlength: 3000 },
+  expectedResult: { type: String, trim: true, maxlength: 2000 },
+  followUpDate: { type: Date, index: true },
+  outcome: { type: String, trim: true, maxlength: 3000 },
+  escalationLevel: { type: Number, min: 0, max: 3, default: 0, index: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true }
 }, { timestamps: true });
 

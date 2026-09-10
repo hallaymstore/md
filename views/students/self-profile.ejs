@@ -1,8 +1,9 @@
 <%- include('../partials/head') %><%- include('../partials/sidebar') %>
 <div class="app"><%- include('../partials/topbar') %><main class="content narrow">
 <%- include('../partials/flash') %>
-<section class="hero-line role-hero role-hero-student"><div><span class="eyebrow">MENING PROFILIM</span><h1>Aloqa va shaxsiy ma’lumotlar</h1><p>Universitet strukturasi va monitoring ko‘rsatkichlarini xodimlar boshqaradi. Siz esa aloqa, yashash va ilmiy profil ma’lumotlaringizni o‘zingiz yangilaysiz.</p></div><div class="profile-complete"><b><%= student.profileCompleteness||0 %>%</b><span>profil to‘ldirilgan</span></div></section>
-<section class="privacy-note"><b>🔐 Ko‘rinish nazorati</b><span>Manzil va favqulodda aloqa faqat vakolatli administrativ rollarga ko‘rinadi. Ilmiy rahbar faqat kerakli aloqa va ilmiy profilni ko‘radi. O‘qituvchi hamda rahbariyatga barcha shaxsiy maydonlar ochilmaydi.</span></section>
+<section class="self-avatar-strip panel motion-panel"><%- include('../partials/avatar', { user:currentUser, size:'lg' }) %><div class="grow"><span class="eyebrow">PROFIL SURATI</span><h2><%= currentUser.fullName %></h2><p>Rasm barcha ichki profil va ro‘yxatlarda ko‘rinadi. Rasm bo‘lmasa magistrant uchun standart ikon ishlatiladi.</p></div><a class="primary" href="/profile/edit">Rasm / profilni sozlash →</a></section>
+<section class="hero-line role-hero role-hero-student"><div><span class="eyebrow">MENING PROFILIM</span><h1>Aloqa va shaxsiy ma’lumotlar</h1><p>Akademik tuzilma va monitoring ko‘rsatkichlarini xodimlar boshqaradi. Siz esa aloqa, yashash va ilmiy profil ma’lumotlaringizni o‘zingiz yangilaysiz.</p></div><div class="profile-complete"><b><%= student.profileCompleteness||0 %>%</b><span>profil to‘ldirilgan</span></div></section>
+<section class="privacy-note"><b>🔐 Ko‘rinish nazorati</b><span>Manzil va favqulodda aloqa faqat vakolatli xodimlarga ko‘rinadi. Ilmiy rahbar faqat kerakli aloqa va ilmiy profilni ko‘radi. O‘qituvchi hamda rahbariyatga barcha shaxsiy maydonlar ochilmaydi.</span></section>
 <section class="panel"><form method="post" action="/students/me/profile" class="form-grid student-self-form">
 <h3 class="span-all form-section-title">Aloqa</h3>
 <label>Asosiy telefon<input name="phone" value="<%= student.phone||'' %>" placeholder="+998 ..."></label>

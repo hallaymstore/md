@@ -64,7 +64,7 @@ exports.updateSeminar = async (req,res,next) => {
 exports.science = async (req,res,next) => {
   try {
     const students=await scopedStudents(req.user); const ids=students.map(s=>s._id);
-    const activities=await ScientificActivity.find({student:{$in:ids}}).populate('student','fullName group specialty').sort({date:-1,createdAt:-1}).lean();
+    const activities=await ScientificActivity.find({student:{$in:ids}}).populate('student','fullName group specialty').populate('submission','applicationNo status').sort({date:-1,createdAt:-1}).lean();
     res.render('modules/science',{title:'Ilmiy faoliyat',students,activities});
   }catch(e){next(e);}
 };
@@ -97,7 +97,7 @@ exports.updateScience=async(req,res,next)=>{
 exports.documents = async (req,res,next) => {
   try{
     const students=await scopedStudents(req.user); const ids=students.map(s=>s._id);
-    const documents=await DocumentRecord.find({student:{$in:ids}}).populate('student','fullName group').populate('upload','originalName path').sort({updatedAt:-1}).lean();
+    const documents=await DocumentRecord.find({student:{$in:ids}}).populate('student','fullName group').populate('upload','originalName path').populate('submission','applicationNo status').sort({updatedAt:-1}).lean();
     res.render('modules/documents',{title:'Hujjatlar monitoringi',students,documents});
   }catch(e){next(e);}
 };

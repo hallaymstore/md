@@ -1,5 +1,5 @@
 <%- include('../partials/head') %><%- include('../partials/sidebar') %>
 <div class="app"><%- include('../partials/topbar') %><main class="content">
-<section class="hero-line compact"><div><span class="eyebrow">SECURITY TRACE</span><h1>Audit jurnali</h1><p>Hisob yaratish, bloklash, login, parol reset, fayl yuklash va monitoring o‘zgarishlari.</p></div></section>
+<section class="hero-line compact"><div><span class="eyebrow">FAOLIYAT NAZORATI</span><h1>Faoliyat tarixi</h1><p>Hisob yaratish, kirish, parolni tiklash, fayl yuklash va ma’lumotlar o‘zgarishlari qayd etiladi.</p></div></section>
 <section class="panel"><div class="table-wrap"><table><thead><tr><th>Vaqt</th><th>Xodim</th><th>Harakat</th><th>Obyekt</th><th>ID</th><th>IP</th></tr></thead><tbody><% logs.forEach(l=>{ %><tr><td><%= new Date(l.createdAt).toLocaleString('uz-UZ') %></td><td><b><%= l.actor?.fullName || 'System' %></b><small><%= l.actor?.login || '—' %></small></td><td><code><%= l.action %></code></td><td><%= l.entity || '—' %></td><td><small><%= l.entityId || '—' %></small></td><td><%= l.ip || '—' %></td></tr><% }) %></tbody></table></div></section>
 </main></div><%- include('../partials/foot') %>

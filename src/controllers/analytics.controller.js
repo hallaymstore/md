@@ -3,7 +3,7 @@ const { buildDashboardData } = require('../services/dashboardData');
 exports.index = async (req, res, next) => {
   try {
     const data = await buildDashboardData(req.user);
-    res.render('analytics/index', { title: 'Kengaytirilgan analitika', ...data });
+    res.render('analytics/index', { title: 'Kengaytirilgan tahlil', ...data });
   } catch (e) { next(e); }
 };
 
@@ -15,7 +15,7 @@ exports.csv = async (req, res, next) => {
     const esc = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
     const csv = '\ufeff' + rows.map(r => r.map(esc).join(',')).join('\n');
     res.setHeader('Content-Type','text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition',`attachment; filename="qdtu-monitor-${new Date().toISOString().slice(0,10)}.csv"`);
+    res.setHeader('Content-Disposition',`attachment; filename="md-monitor-${new Date().toISOString().slice(0,10)}.csv"`);
     res.send(csv);
   } catch (e) { next(e); }
 };

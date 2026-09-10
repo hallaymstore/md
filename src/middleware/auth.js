@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 
 async function attachUser(req, res, next) {
   try {
@@ -16,6 +17,7 @@ async function attachUser(req, res, next) {
     }
     req.user = user;
     res.locals.currentUser = user;
+    res.locals.unreadNotifications = await Notification.countDocuments({ recipient: user._id, readAt: null });
     next();
   } catch (error) {
     next(error);

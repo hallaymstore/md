@@ -13,7 +13,7 @@ const ROLES = {
 const ROLE_LABELS = {
   superadmin: 'Bosh administrator',
   tech: 'Texnik xodim',
-  management: 'Universitet rahbariyati',
+  management: 'Rahbariyat',
   magistracy: 'Magistratura bo‘limi',
   dean: 'Dekanat / fakultet',
   department: 'Kafedra',

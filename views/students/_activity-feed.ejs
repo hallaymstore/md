@@ -1,0 +1,57 @@
+<section class="portfolio-layout">
+  <aside class="panel portfolio-summary">
+    <span class="eyebrow">ILMIY PORTFEL</span>
+    <h2>Bajarilgan ishlar</h2>
+    <p>Faqat yakunlangan, qabul qilingan yoki barcha bosqichlarda tasdiqlangan ilmiy natijalar ko‘rsatiladi.</p>
+    <div class="portfolio-count"><strong><%= portfolioStats.total %></strong><span>jami ish</span></div>
+    <div class="portfolio-mini-grid">
+      <div><b><%= portfolioStats.publications %></b><span>Maqola</span></div>
+      <div><b><%= portfolioStats.conferences %></b><span>Konferensiya</span></div>
+      <div><b><%= portfolioStats.approved %></b><span>Tasdiqlangan ariza</span></div>
+    </div>
+    <a class="secondary portfolio-link" href="/science">Ilmiy faoliyatni ko‘rish →</a>
+  </aside>
+
+  <div class="panel activity-feed-panel">
+    <div class="panel-head">
+      <div><span class="eyebrow">FAOLIYAT LENTASI</span><h2><%= student.fullName %>ning ilmiy ishlari</h2></div>
+      <span class="verified-portfolio">✓ Tasdiqlangan portfel</span>
+    </div>
+    <% if (activityFeed.length) { %>
+      <div class="activity-feed">
+        <% activityFeed.forEach(work => { const text = work.summary && work.summary.length > 360 ? work.summary.slice(0, 360) + '…' : work.summary; %>
+          <article class="activity-post">
+            <header>
+              <div class="avatar soft"><%= student.fullName.charAt(0) %></div>
+              <div>
+                <b><%= student.fullName %></b>
+                <span><%= work.typeLabel %> · <%= new Date(work.date).toLocaleDateString('uz-UZ', { year:'numeric', month:'short', day:'numeric' }) %></span>
+              </div>
+              <span class="status <%= work.statusTone %>"><%= work.statusLabel %></span>
+            </header>
+            <div class="activity-post-body">
+              <h3><%= work.title %></h3>
+              <% if (text) { %><p><%= text %></p><% } %>
+              <% if (work.organization) { %><span class="activity-organization">⌂ <%= work.organization %></span><% } %>
+            </div>
+            <footer>
+              <div>
+                <% if (work.applicationNo) { %><span class="post-chip"><%= work.applicationNo %></span><% } %>
+                <% if (work.score) { %><span class="post-chip">Natija: <%= work.score %>%</span><% } %>
+              </div>
+              <div>
+                <% if (work.externalUrl) { %><a href="<%= work.externalUrl %>" target="_blank" rel="noopener noreferrer">Manba ↗</a><% } %>
+                <a href="<%= work.detailUrl %>">Batafsil →</a>
+              </div>
+            </footer>
+          </article>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="portfolio-empty">
+        <span>◎</span><b>Ilmiy portfel hali bo‘sh</b>
+        <p>Yakunlangan ilmiy faoliyat yoki barcha bosqichlardan o‘tgan ariza shu yerda avtomatik paydo bo‘ladi.</p>
+      </div>
+    <% } %>
+  </div>
+</section>

@@ -4,6 +4,8 @@ const studentSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true },
   fullName: { type: String, required: true, trim: true, index: true },
   studentId: { type: String, trim: true, unique: true, sparse: true },
+  hemisSyncedAt: Date,
+  hemisSource: { type: String, trim: true },
   faculty: { type: String, trim: true, index: true },
   department: { type: String, trim: true, index: true },
   specialty: { type: String, trim: true, index: true },
