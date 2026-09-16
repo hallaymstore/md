@@ -3,6 +3,7 @@
   <nav class="nav">
     <span class="nav-label">Asosiy</span>
     <a class="<%= path.startsWith('/dashboard')?'active':'' %>" href="/dashboard"><i>⌂</i><span>Boshqaruv paneli</span></a>
+    <a class="<%= path.startsWith('/timetable')?'active':'' %>" href="/timetable"><i>▦</i><span>Dars jadvali</span></a>
     <a class="<%= path.startsWith('/submissions')?'active':'' %>" href="/submissions"><i>⇢</i><span><%= currentUser.role==='student'?'Ilmiy arizalarim':'Ilmiy arizalar navbati' %></span></a>
     <% if(currentUser.role!=='student'){ %><a class="<%= path.startsWith('/analytics')?'active':'' %>" href="/analytics"><i>⌁</i><span>Analitika</span></a><% } %>
 
@@ -51,27 +52,12 @@
     <a class="<%= path.startsWith('/md/graduation')?'active':'' %>" href="/md/graduation"><i>✓</i><span>Bitiruvga tayyorlik</span></a>
     <a class="<%= path.startsWith('/md/trends')?'active':'' %>" href="/md/trends"><i>⌁</i><span>O‘zgarishlar dinamikasi</span></a>
     <a class="<%= path.startsWith('/md/advantages')?'active':'' %>" href="/md/advantages"><i>i</i><span>MD imkoniyatlari</span></a>
-
-    <% if(currentUser.role!=='student'){ %>
-      <span class="nav-label">Magistratura tahlili</span>
-      <a class="<%= path.startsWith('/insights/risks')?'active':'' %>" href="/insights/risks"><i>⚠</i><span>Erta ogohlantirish</span></a>
-      <a class="<%= path.startsWith('/insights/supervisors')?'active':'' %>" href="/insights/supervisors"><i>◌</i><span>Ilmiy rahbar yuklamasi</span></a>
-    <% } %>
+    <% if(currentUser.role!=='student'){ %><span class="nav-label">Magistratura tahlili</span><a class="<%= path.startsWith('/insights/risks')?'active':'' %>" href="/insights/risks"><i>⚠</i><span>Erta ogohlantirish</span></a><a class="<%= path.startsWith('/insights/supervisors')?'active':'' %>" href="/insights/supervisors"><i>◌</i><span>Ilmiy rahbar yuklamasi</span></a><% } %>
     <a class="<%= path.startsWith('/milestones')?'active':'' %>" href="/milestones"><i>↗</i><span>Dissertatsiya bosqichlari</span></a>
-    <% if(['superadmin','tech','magistracy'].includes(currentUser.role)){ %>
-      <a class="<%= path.startsWith('/integrations/hemis')?'active':'' %>" href="/integrations/hemis"><i>⇄</i><span>HEMIS ma’lumotlari</span></a>
-    <% } %>
-
-    <% if(['superadmin','tech','management','magistracy'].includes(currentUser.role)){ %>
-      <a href="/display" target="_blank" rel="noopener"><i>▣</i><span>Katta ekran</span></a>
-    <% } %>
-    <% if(['superadmin','tech'].includes(currentUser.role)){ %>
-      <span class="nav-label">Tizim boshqaruvi</span>
-      <a class="<%= path.startsWith('/control')?'active':'' %>" href="/control"><i>⊙</i><span><%= currentUser.role==='superadmin'?'Umumiy nazorat':'Tizim nazorati' %></span></a>
-    <% } %>
-    <% if(['superadmin','tech','magistracy','dean','department'].includes(currentUser.role)){ %>
-      <a class="<%= path.startsWith('/users')?'active':'' %>" href="/users"><i>◇</i><span>Hisoblar va vakolat</span></a>
-    <% } %>
+    <% if(['superadmin','tech','magistracy'].includes(currentUser.role)){ %><a class="<%= path.startsWith('/integrations/hemis')?'active':'' %>" href="/integrations/hemis"><i>⇄</i><span>HEMIS ma’lumotlari</span></a><% } %>
+    <% if(['superadmin','tech','management','magistracy'].includes(currentUser.role)){ %><a href="/display" target="_blank" rel="noopener"><i>▣</i><span>Katta ekran</span></a><% } %>
+    <% if(['superadmin','tech'].includes(currentUser.role)){ %><span class="nav-label">Tizim boshqaruvi</span><a class="<%= path.startsWith('/control')?'active':'' %>" href="/control"><i>⊙</i><span><%= currentUser.role==='superadmin'?'Umumiy nazorat':'Tizim nazorati' %></span></a><% } %>
+    <% if(['superadmin','tech','magistracy','dean','department'].includes(currentUser.role)){ %><a class="<%= path.startsWith('/users')?'active':'' %>" href="/users"><i>◇</i><span>Hisoblar va vakolat</span></a><% } %>
     <% if(['superadmin','tech','magistracy'].includes(currentUser.role)){ %><a class="<%= path.startsWith('/structure')?'active':'' %>" href="/structure"><i>⌘</i><span>Akademik nomlar</span></a><% } %>
     <% if(['superadmin','tech'].includes(currentUser.role)){ %><a class="<%= path.startsWith('/audit')?'active':'' %>" href="/audit"><i>≋</i><span>Faoliyat tarixi</span></a><% } %>
   </nav>
