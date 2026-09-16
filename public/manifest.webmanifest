@@ -18,6 +18,7 @@
   ],
   "shortcuts": [
     {"name":"Boshqaruv paneli","short_name":"Bosh sahifa","url":"/dashboard","icons":[{"src":"/static/icons/md-192.png","sizes":"192x192"}]},
+    {"name":"Dars jadvali","short_name":"Jadval","url":"/timetable","icons":[{"src":"/static/icons/md-192.png","sizes":"192x192"}]},
     {"name":"Muddatlar markazi","short_name":"Muddatlar","url":"/md/deadlines","icons":[{"src":"/static/icons/md-192.png","sizes":"192x192"}]},
     {"name":"Muammo va chora","short_name":"Chora","url":"/md/interventions","icons":[{"src":"/static/icons/md-192.png","sizes":"192x192"}]}
   ]
