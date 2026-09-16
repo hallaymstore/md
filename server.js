@@ -11,7 +11,7 @@ async function boot() {
     console.log('Ma’lumotlar bazasi ulandi.');
     app.listen(PORT, () => {
       console.log('===============================================');
-      console.log('MD v3.0.0');
+      console.log('MD v3.2.0');
       console.log(`MD: http://localhost:${PORT}/login`);
       console.log(`Katta ekran: http://localhost:${PORT}/display`);
       console.log('MD ishga tushdi.');
