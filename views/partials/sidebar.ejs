@@ -3,7 +3,8 @@
   <nav class="nav">
     <span class="nav-label">Asosiy</span>
     <a class="<%= path.startsWith('/dashboard')?'active':'' %>" href="/dashboard"><i>⌂</i><span>Boshqaruv paneli</span></a>
-    <a class="<%= path.startsWith('/timetable')?'active':'' %>" href="/timetable"><i>▦</i><span>Dars jadvali</span></a>
+    <a class="<%= path==='/timetable' || (path.startsWith('/timetable/') && !path.startsWith('/timetable/import'))?'active':'' %>" href="/timetable"><i>▦</i><span>Dars jadvali</span></a>
+    <% if(['superadmin','tech'].includes(currentUser.role)){ %><a class="<%= path.startsWith('/timetable/import')?'active':'' %>" href="/timetable/import"><i>⇧</i><span>Excel jadval yuklash</span></a><% } %>
     <a class="<%= path.startsWith('/submissions')?'active':'' %>" href="/submissions"><i>⇢</i><span><%= currentUser.role==='student'?'Ilmiy arizalarim':'Ilmiy arizalar navbati' %></span></a>
     <% if(currentUser.role!=='student'){ %><a class="<%= path.startsWith('/analytics')?'active':'' %>" href="/analytics"><i>⌁</i><span>Analitika</span></a><% } %>
 
