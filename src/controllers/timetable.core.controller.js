@@ -1,0 +1,174 @@
+const TimetableEntry = require('../models/TimetableEntry');
+const Student = require('../models/Student');
+const User = require('../models/User');
+const audit = require('../services/audit');
+const { PERIODS, DAYS, LESSON_TYPES } = require('../config/timetable');
+
+const EDIT_ROLES = ['superadmin','tech','magistracy','dean','department'];
+const OWN_TEACHER_ROLES = ['teacher','supervisor'];
+
+function tashkentToday() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone:'Asia/Tashkent', year:'numeric', month:'2-digit', day:'2-digit' }).format(new Date());
+}
+function validDateString(value) { return /^\d{4}-\d{2}-\d{2}$/.test(String(value||'')) ? String(value) : tashkentToday(); }
+function dateFromYmd(value) { const [y,m,d]=value.split('-').map(Number); return new Date(Date.UTC(y,m-1,d,12)); }
+function ymd(d) { return d.toISOString().slice(0,10); }
+function addDays(d,n) { const out=new Date(d); out.setUTCDate(out.getUTCDate()+n); return out; }
+function mondayOf(value) { const d=dateFromYmd(value); const day=d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()-(day-1)); return d; }
+function isoWeekNumber(date) {
+  const d=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate()));
+  const day=d.getUTCDay()||7; d.setUTCDate(d.getUTCDate()+4-day);
+  const start=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d-start)/86400000)+1)/7);
+}
+function academicYearFor(date) { const y=date.getUTCFullYear(), m=date.getUTCMonth()+1; return m>=8?`${y}/${y+1}`:`${y-1}/${y}`; }
+function semesterFor(date) { const m=date.getUTCMonth()+1; return (m>=8||m===1)?1:2; }
+function weekMatches(a,b) { return a==='all'||b==='all'||a===b; }
+function colorIndex(subject) { let h=0; for(const ch of String(subject||'')) h=((h<<5)-h+ch.charCodeAt(0))|0; return Math.abs(h)%8; }
+
+async function visibleGroups(user) {
+  const q={studyStatus:'active'};
+  if(user.role==='dean') q.faculty=user.faculty;
+  if(['department','teacher'].includes(user.role)) q.department=user.department;
+  if(user.role==='supervisor') q.supervisor=user._id;
+  if(user.role==='student') q.user=user._id;
+  const a=await Student.distinct('group',q);
+  if(['student','supervisor'].includes(user.role)) return a.filter(Boolean).sort((x,y)=>x.localeCompare(y,'uz'));
+  const tq={active:true};
+  if(user.role==='dean') tq.faculty=user.faculty;
+  if(['department','teacher'].includes(user.role)) tq.department=user.department;
+  const b=await TimetableEntry.distinct('group',tq);
+  return [...new Set([...a,...b].filter(Boolean))].sort((x,y)=>x.localeCompare(y,'uz'));
+}
+async function visibleTeachers(user) {
+  const q={active:true,role:{$in:['teacher','supervisor','department']}};
+  if(user.role==='dean') q.faculty=user.faculty;
+  if(user.role==='department') q.department=user.department;
+  return User.find(q).select('fullName login role department faculty').sort({fullName:1}).lean();
+}
+async function canEditEntry(user,entry) {
+  if(!EDIT_ROLES.includes(user.role)) return false;
+  if(['superadmin','tech','magistracy'].includes(user.role)) return true;
+  if(user.role==='dean') return !entry.faculty || entry.faculty===user.faculty;
+  if(user.role==='department') return !entry.department || entry.department===user.department;
+  return false;
+}
+async function groupScope(user,group) {
+  const q={group,studyStatus:'active'};
+  if(user.role==='dean') q.faculty=user.faculty;
+  if(user.role==='department') q.department=user.department;
+  const sample=await Student.findOne(q).lean();
+  if(!sample && !['superadmin','tech','magistracy'].includes(user.role)) return null;
+  return sample||{group,faculty:'',department:''};
+}
+function payload(body,groupInfo,teacher,user) {
+  const pn=Math.max(1,Math.min(7,Number(body.period||1)));
+  const p=PERIODS.find(x=>x.no===pn)||PERIODS[0];
+  return {
+    academicYear:String(body.academicYear||'').trim(),
+    semester:[1,2].includes(Number(body.semester))?Number(body.semester):1,
+    weekType:['all','odd','even'].includes(body.weekType)?body.weekType:'all',
+    day:Math.max(1,Math.min(6,Number(body.day||1))), period:pn,
+    startTime:String(body.startTime||p.start).trim(), endTime:String(body.endTime||p.end).trim(),
+    subject:String(body.subject||'').trim(),
+    lessonType:Object.prototype.hasOwnProperty.call(LESSON_TYPES,body.lessonType)?body.lessonType:'lecture',
+    group:String(body.group||'').trim(), teacher:teacher?._id:undefined,
+    teacherName:teacher?.fullName||String(body.teacherName||'').trim(), room:String(body.room||'').trim(),
+    faculty:groupInfo?.faculty||String(body.faculty||'').trim(), department:groupInfo?.department||String(body.department||'').trim(),
+    note:String(body.note||'').trim(), active:body.active===undefined?true:['on','true','1'].includes(String(body.active)), updatedBy:user._id
+  };
+}
+async function conflictsFor(p,excludeId) {
+  const q={academicYear:p.academicYear,semester:p.semester,day:p.day,period:p.period,active:true};
+  if(excludeId) q._id={$ne:excludeId};
+  const list=await TimetableEntry.find(q).populate('teacher','fullName').lean();
+  return list.filter(x=>{
+    if(!weekMatches(x.weekType,p.weekType)) return false;
+    return (x.group&&p.group&&x.group===p.group) || (x.teacher&&p.teacher&&String(x.teacher._id||x.teacher)===String(p.teacher)) || (x.room&&p.room&&x.room.toLowerCase()===p.room.toLowerCase());
+  });
+}
+function conflictMessage(list,p) {
+  const parts=[];
+  if(list.some(x=>x.group===p.group)) parts.push(`guruh ${p.group}`);
+  if(p.teacher&&list.some(x=>x.teacher&&String(x.teacher._id||x.teacher)===String(p.teacher))) parts.push('o‘qituvchi');
+  if(p.room&&list.some(x=>x.room&&x.room.toLowerCase()===p.room.toLowerCase())) parts.push(`xona ${p.room}`);
+  return `Jadval to‘qnashuvi: ${parts.join(', ')} shu vaqtda band.`;
+}
+
+exports.index=async(req,res,next)=>{
+  try{
+    const today=tashkentToday(), date=validDateString(req.query.date), monday=mondayOf(date), weekNo=isoWeekNumber(monday), weekParity=weekNo%2?'odd':'even';
+    const academicYear=String(req.query.academicYear||academicYearFor(monday));
+    const semester=[1,2].includes(Number(req.query.semester))?Number(req.query.semester):semesterFor(monday);
+    const groups=await visibleGroups(req.user), teachers=await visibleTeachers(req.user);
+    let view=['group','teacher','room'].includes(req.query.view)?req.query.view:'group';
+    let selected=String(req.query.selected||'');
+    if(req.user.role==='student') { view='group'; selected=groups[0]||''; }
+    if(OWN_TEACHER_ROLES.includes(req.user.role)) { view='teacher'; selected=String(req.user._id); }
+    let roomScope={active:true,academicYear,semester};
+    if(req.user.role==='dean') roomScope.faculty=req.user.faculty;
+    if(req.user.role==='department') roomScope.department=req.user.department;
+    const rooms=(await TimetableEntry.distinct('room',roomScope)).filter(Boolean).sort((a,b)=>a.localeCompare(b,'uz'));
+    if(!selected) selected=view==='group'?(groups[0]||''):view==='teacher'?(teachers[0]?String(teachers[0]._id):''):(rooms[0]||'');
+
+    const q={active:true,academicYear,semester,weekType:{$in:['all',weekParity]}};
+    if(req.user.role==='dean') q.faculty=req.user.faculty;
+    if(req.user.role==='department') q.department=req.user.department;
+    if(req.user.role==='student') q.group=selected;
+    else if(OWN_TEACHER_ROLES.includes(req.user.role)) q.teacher=req.user._id;
+    else if(view==='group'&&selected) q.group=selected;
+    else if(view==='teacher'&&selected) q.teacher=selected;
+    else if(view==='room'&&selected) q.room=selected;
+    const entries=await TimetableEntry.find(q).populate('teacher','fullName login').sort({day:1,period:1,subject:1}).lean();
+    entries.forEach(x=>x.colorIndex=colorIndex(x.subject));
+    const grid={}; for(const x of entries){ const k=`${x.day}:${x.period}`; (grid[k]||(grid[k]=[])).push(x); }
+    const weekDates=DAYS.map((d,i)=>({...d,date:ymd(addDays(monday,i))}));
+    res.render('timetable/index',{
+      title:'Dars jadvali', PERIODS,DAYS,LESSON_TYPES,groups,teachers,rooms,entries,grid,view,selected,academicYear,semester,date,today,weekNo,weekParity,weekDates,
+      prevDate:ymd(addDays(monday,-7)), nextDate:ymd(addDays(monday,7)), canEdit:EDIT_ROLES.includes(req.user.role)
+    });
+  }catch(e){next(e);}
+};
+
+exports.form=async(req,res,next)=>{
+  try{
+    const entry=req.params.id?await TimetableEntry.findById(req.params.id).lean():null;
+    if(req.params.id&&!entry) return res.status(404).render('errors/404',{title:'Jadval yozuvi topilmadi'});
+    if(entry&&!(await canEditEntry(req.user,entry))) return res.status(403).render('errors/403',{title:'Ruxsat yo‘q'});
+    const groups=await visibleGroups(req.user), teachers=await visibleTeachers(req.user), base=dateFromYmd(validDateString(req.query.date));
+    res.render('timetable/form',{title:entry?'Jadvalni tahrirlash':'Yangi dars',entry,PERIODS,DAYS,LESSON_TYPES,groups,teachers,defaultAcademicYear:academicYearFor(base),defaultSemester:semesterFor(base)});
+  }catch(e){next(e);}
+};
+exports.create=async(req,res,next)=>{
+  try{
+    const group=String(req.body.group||'').trim(), info=await groupScope(req.user,group);
+    if(!info){req.session.flash={type:'error',text:'Bu guruh uchun jadval yaratishga ruxsatingiz yo‘q.'};return res.redirect('/timetable/new');}
+    const teacher=req.body.teacher?await User.findById(req.body.teacher).lean():null, p=payload(req.body,info,teacher,req.user);
+    if(!p.academicYear||!p.subject||!p.group){req.session.flash={type:'error',text:'O‘quv yili, fan va guruh majburiy.'};return res.redirect('/timetable/new');}
+    const conflicts=await conflictsFor(p); if(conflicts.length){req.session.flash={type:'error',text:conflictMessage(conflicts,p)};return res.redirect('/timetable/new');}
+    const item=await TimetableEntry.create({...p,createdBy:req.user._id});
+    await audit(req,'timetable_create','TimetableEntry',item._id,{group:item.group,day:item.day,period:item.period,subject:item.subject});
+    req.session.flash={type:'success',text:'Dars jadvalga qo‘shildi.'}; res.redirect(`/timetable?view=group&selected=${encodeURIComponent(item.group)}`);
+  }catch(e){next(e);}
+};
+exports.update=async(req,res,next)=>{
+  try{
+    const item=await TimetableEntry.findById(req.params.id); if(!item) return res.status(404).render('errors/404',{title:'Jadval yozuvi topilmadi'});
+    if(!(await canEditEntry(req.user,item))) return res.status(403).render('errors/403',{title:'Ruxsat yo‘q'});
+    const group=String(req.body.group||'').trim(), info=await groupScope(req.user,group);
+    if(!info){req.session.flash={type:'error',text:'Bu guruh uchun jadvalni o‘zgartirishga ruxsatingiz yo‘q.'};return res.redirect(`/timetable/${item._id}/edit`);}
+    const teacher=req.body.teacher?await User.findById(req.body.teacher).lean():null, p=payload(req.body,info,teacher,req.user);
+    if(!p.academicYear||!p.subject||!p.group){req.session.flash={type:'error',text:'O‘quv yili, fan va guruh majburiy.'};return res.redirect(`/timetable/${item._id}/edit`);}
+    const conflicts=await conflictsFor(p,item._id); if(conflicts.length){req.session.flash={type:'error',text:conflictMessage(conflicts,p)};return res.redirect(`/timetable/${item._id}/edit`);}
+    Object.assign(item,p); await item.save(); await audit(req,'timetable_update','TimetableEntry',item._id,{group:item.group,day:item.day,period:item.period,subject:item.subject});
+    req.session.flash={type:'success',text:'Jadval yangilandi.'}; res.redirect(`/timetable?view=group&selected=${encodeURIComponent(item.group)}`);
+  }catch(e){next(e);}
+};
+exports.remove=async(req,res,next)=>{
+  try{
+    const item=await TimetableEntry.findById(req.params.id); if(!item) return res.status(404).render('errors/404',{title:'Jadval yozuvi topilmadi'});
+    if(!(await canEditEntry(req.user,item))) return res.status(403).render('errors/403',{title:'Ruxsat yo‘q'});
+    await audit(req,'timetable_delete','TimetableEntry',item._id,{group:item.group,subject:item.subject}); await item.deleteOne();
+    req.session.flash={type:'success',text:'Dars jadvaldan olib tashlandi.'}; res.redirect('/timetable');
+  }catch(e){next(e);}
+};
