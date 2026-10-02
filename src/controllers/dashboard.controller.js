@@ -1,4 +1,5 @@
 const Student = require('../models/Student');
+const User = require('../models/User');
 const ScientificActivity = require('../models/ScientificActivity');
 const ResearchSubmission = require('../models/ResearchSubmission');
 const { scopeQueryForUser } = require('../middleware/auth');
@@ -140,5 +141,28 @@ exports.live = async (req, res, next) => {
     };
     req.on('close', cleanup);
     res.on('close', cleanup);
+  } catch (e) { next(e); }
+};
+
+
+exports.search = async (req, res, next) => {
+  try {
+    const q = String(req.query.q || '').trim().slice(0, 80);
+    if (q.length < 2) return res.json({ results: [] });
+    const escaped = q.replace(/[.*+?^$()|[\\]\\\\]/g, '\\\\$&');
+    const rx = new RegExp(escaped, 'i');
+    const studentQuery = scopeQueryForUser(req.user, { $or: [
+      { fullName: rx }, { studentId: rx }, { group: rx }, { faculty: rx }, { department: rx }, { specialty: rx }
+    ]});
+    const students = await Student.find(studentQuery).select('fullName studentId group faculty department').sort({ fullName: 1 }).limit(8).lean();
+    const results = students.map(s => ({ type:'student', title:s.fullName, subtitle:[s.studentId,s.group,s.department].filter(Boolean).join(' • '), url:'/students/'+s._id }));
+    if (['superadmin','tech','magistracy','dean','department'].includes(req.user.role)) {
+      const userQuery = { $or: [{ fullName:rx },{ login:rx },{ employeeId:rx },{ phone:rx },{ email:rx }] };
+      if (req.user.role === 'dean') userQuery.faculty = req.user.faculty;
+      if (req.user.role === 'department') userQuery.department = req.user.department;
+      const users = await User.find(userQuery).select('fullName login role faculty department').sort({ fullName:1 }).limit(6).lean();
+      users.forEach(u => results.push({ type:'user', title:u.fullName, subtitle:[u.login,u.role,u.department].filter(Boolean).join(' • '), url:'/profile/'+u._id }));
+    }
+    res.json({ results: results.slice(0,12) });
   } catch (e) { next(e); }
 };
