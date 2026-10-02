@@ -40,7 +40,7 @@ app.use('/static', express.static(path.join(__dirname, 'public'), { etag:false,l
 app.use(session({ secret:process.env.SESSION_SECRET||'dev-secret-change-me',resave:false,saveUninitialized:false,store:MongoStore.create({mongoUrl:process.env.MONGODB_URI||process.env.MONGO_URI||'mongodb://127.0.0.1:27017/md'}),cookie:{httpOnly:true,sameSite:'lax',secure:process.env.NODE_ENV==='production',maxAge:1000*60*60*10} }));
 app.use(attachUser);
 app.use((req,res,next)=>{const allowed=['/login','/logout','/password','/sw.js','/manifest.webmanifest','/offline'];if(req.user&&req.user.mustChangePassword&&!allowed.includes(req.path)&&!req.path.startsWith('/static/')&&!req.path.startsWith('/display'))return res.redirect('/password');next();});
-app.use((req,res,next)=>{res.locals.path=req.path;res.locals.uiVersion='3.2.0';res.locals.roleLabels=ROLE_LABELS;res.locals.flash=req.session.flash||null;delete req.session.flash;next();});
+app.use((req,res,next)=>{res.locals.path=req.path;res.locals.uiVersion='3.4.0';res.locals.roleLabels=ROLE_LABELS;res.locals.flash=req.session.flash||null;delete req.session.flash;next();});
 app.get('/manifest.webmanifest',(req,res)=>res.sendFile(path.join(__dirname,'public','manifest.webmanifest')));
 app.get('/sw.js',(req,res)=>{res.setHeader('Service-Worker-Allowed','/');res.setHeader('Cache-Control','no-cache');res.type('application/javascript');res.sendFile(path.join(__dirname,'public','sw.js'));});
 app.get('/offline',(req,res)=>res.sendFile(path.join(__dirname,'public','offline.html')));
