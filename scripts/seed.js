@@ -110,7 +110,14 @@ async function seedWorkflow(students, actors){
 async function run(){
   await mongoose.connect(uri);
   const adminLogin=process.env.SUPERADMIN_LOGIN||'admin'; const adminPassword=process.env.SUPERADMIN_PASSWORD||'Admin123!';
-  const admin=await ensureUser({login:adminLogin,role:'superadmin',fullName:'MD Bosh Administrator',email:'internal@md.local',active:true,mustChangePassword:false},adminPassword);
+  let admin=await ensureUser({login:adminLogin,role:'superadmin',fullName:'MD Bosh Administrator',email:'internal@md.local',active:true,mustChangePassword:false},adminPassword);
+  // Production deployda SUPERADMIN_PASSWORD berilgan bo‘lsa, mavjud admin parolini ham shu qiymatga sinxronlaymiz.
+  if (process.env.SUPERADMIN_PASSWORD) {
+    await admin.setPassword(adminPassword);
+    admin.active=true;
+    admin.mustChangePassword=false;
+    await admin.save();
+  }
   if(process.env.NODE_ENV!=='production'){
     const tech=await ensureUser({login:'texnik01',role:'tech',fullName:'Texnik xodim Demo',active:true,mustChangePassword:false,createdBy:admin._id},'Demo123!');
     const management=await ensureUser({login:'rahbariyat',role:'management',fullName:'Rahbariyat Demo',active:true,mustChangePassword:false,createdBy:admin._id},'Demo123!');
