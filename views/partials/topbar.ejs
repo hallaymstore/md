@@ -1,1 +1,31 @@
-<header class="topbar"><button class="icon-btn mobile-only" id="menuBtn">☰</button><div class="crumb"><span>MD • magistratura boshqaruvi</span><b><%= title %></b></div><div class="top-actions"><span class="offline-state" data-network-state><i></i><span>Onlayn</span></span><button class="icon-btn pwa-install" type="button" data-pwa-install hidden title="MD ilovasini o‘rnatish">⬇</button><a class="notification-bell" href="/notifications" title="Bildirishnomalar"><span>♢</span><% if(typeof unreadNotifications!=='undefined' && unreadNotifications>0){ %><b><%= unreadNotifications>99?'99+':unreadNotifications %></b><% } %></a><button class="theme-toggle" type="button" data-theme-toggle title="Kunduzgi / tungi mavzu"><span class="theme-icon">☾</span><span class="theme-label">Tungi</span></button><span class="role-pill"><%= roleLabels[currentUser.role] || currentUser.role %></span><span class="live-dot"><i></i> Himoyalangan</span><a class="top-profile-link" href="/profile" title="Mening profilim"><%- include('avatar', { user:currentUser, size:'xs' }) %></a><a class="icon-btn" href="/password" title="Parol va xavfsizlik">⚙</a></div></header>
+<header class="topbar">
+  <button class="icon-btn mobile-only" id="menuBtn">☰</button>
+  <div class="crumb"><span>MD • magistratura boshqaruvi</span><b><%= title %></b></div>
+  <div class="top-search-wrap">
+    <input id="globalSearch" class="top-search" placeholder="Qidirish..." autocomplete="off">
+    <div id="globalSearchResults" class="top-search-results" hidden></div>
+  </div>
+  <div class="top-actions">
+    <span class="offline-state" data-network-state><i></i><span>Onlayn</span></span>
+    <button class="icon-btn pwa-install" type="button" data-pwa-install hidden title="MD ilovasini o‘rnatish">⬇</button>
+    <a class="notification-bell" href="/notifications" title="Bildirishnomalar"><span>♢</span><% if(typeof unreadNotifications!=='undefined' && unreadNotifications>0){ %><b><%= unreadNotifications>99?'99+':unreadNotifications %></b><% } %></a>
+    <button class="theme-toggle" type="button" data-theme-toggle title="Kunduzgi / tungi mavzu"><span class="theme-icon">☾</span><span class="theme-label">Tungi</span></button>
+    <span class="role-pill"><%= roleLabels[currentUser.role] || currentUser.role %></span>
+    <span class="live-dot"><i></i> Himoyalangan</span>
+    <a class="top-profile-link" href="/profile" title="Mening profilim"><%- include('avatar', { user:currentUser, size:'xs' }) %></a>
+    <a class="icon-btn" href="/password" title="Parol va xavfsizlik">⚙</a>
+  </div>
+</header>
+<style>
+.top-search-wrap{position:relative;min-width:240px;max-width:360px;flex:1}.top-search{width:100%;height:38px;border:1px solid var(--line,#dbe7f2);border-radius:12px;padding:0 12px;background:var(--card,#fff);color:inherit}.top-search-results{position:absolute;top:44px;left:0;right:0;z-index:80;background:var(--card,#fff);border:1px solid var(--line,#dbe7f2);border-radius:14px;box-shadow:0 18px 50px rgba(20,45,70,.16);overflow:hidden}.top-search-results a{display:block;padding:10px 12px;text-decoration:none;color:inherit;border-bottom:1px solid var(--line,#eef3f8)}.top-search-results a:last-child{border-bottom:0}.top-search-results b{display:block;font-size:13px}.top-search-results small{display:block;opacity:.7;margin-top:2px}@media(max-width:900px){.top-search-wrap{order:3;min-width:100%;max-width:none}.topbar{flex-wrap:wrap}.top-search{height:36px}}
+</style>
+<script>
+(() => {
+  const input=document.getElementById('globalSearch'), box=document.getElementById('globalSearchResults');
+  if(!input||!box) return;
+  let timer;
+  const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  input.addEventListener('input',()=>{clearTimeout(timer);const q=input.value.trim();if(q.length<2){box.hidden=true;box.innerHTML='';return;}timer=setTimeout(async()=>{try{const r=await fetch('/dashboard/search?q='+encodeURIComponent(q));const j=await r.json();if(!j.results?.length){box.innerHTML='<a><b>Natija topilmadi</b><small>Boshqa so‘z bilan qidiring</small></a>';box.hidden=false;return;}box.innerHTML=j.results.map(x=>'<a href="'+esc(x.url)+'"><b>'+esc(x.title)+'</b><small>'+esc(x.subtitle)+'</small></a>').join('');box.hidden=false;}catch(_){box.hidden=true;}},180);});
+  document.addEventListener('click',e=>{if(!e.target.closest('.top-search-wrap'))box.hidden=true;});
+})();
+</script>
