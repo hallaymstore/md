@@ -449,3 +449,208 @@ html[data-theme="dark"] .offline-state{background:#15392a;border-color:#2d674d;c
 @media(max-width:760px){.offline-state span{display:none}.offline-state{width:30px;padding:0;justify-content:center}.intervention-grid,.graduation-check-grid{grid-template-columns:1fr}.compact-action-form,.graduation-form{grid-template-columns:1fr}.md-feature-grid{grid-template-columns:1fr}.trend-head,.trend-row{grid-template-columns:62px 1fr 1fr}.trend-head span:nth-child(3),.trend-row>div:nth-child(3),.trend-head span:last-child,.trend-row>strong{display:none}}
 .md-install-login{margin-top:12px;max-width:220px}.login-info .md-install-login{justify-self:start}
 .md-command-strip{margin:0 0 14px}.md-command-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:0 2px 9px}.md-command-head h2{font-size:15px;margin:3px 0 0}.md-command-head>a{font-size:9px;color:var(--green);font-weight:850}.md-command-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.md-command-grid .headline-kpi{min-height:112px}.md-command-grid .headline-kpi:nth-child(2){border-color:#efd8b3}.md-command-grid .headline-kpi:nth-child(3){border-color:#c9e7d5}.md-command-grid .headline-kpi:nth-child(4) strong{color:var(--green)}@media(max-width:900px){.md-command-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:540px){.md-command-grid{grid-template-columns:1fr}.md-command-head{align-items:flex-start;flex-direction:column}}
+
+
+/* MD v3.5 — PREMIUM CALM MOTION & VISUAL SYSTEM
+   Professional university UI: no distracting infinite motion. */
+:root{
+  --md-motion-fast:140ms;
+  --md-motion:220ms;
+  --md-motion-slow:320ms;
+  --md-ease:cubic-bezier(.22,.8,.22,1);
+  --md-shadow-sm:0 4px 14px rgba(28,70,51,.06);
+  --md-shadow-md:0 10px 28px rgba(28,70,51,.09);
+  --md-shadow-lg:0 18px 46px rgba(28,70,51,.12);
+}
+
+/* Stop all decorative infinite motion. */
+body::before,
+.svg-ring-orbit-group,
+.svg-ring-orbit,
+.offline-state>i,
+.live-dot i,
+.network-pulse::before,
+.network-pulse::after{
+  animation:none!important;
+}
+
+/* Keep status indicators elegant and static. */
+.offline-state>i,
+.live-dot i{
+  box-shadow:0 0 0 4px rgba(35,169,111,.10)!important;
+}
+.svg-ring-orbit-group{transform:none!important}
+.svg-ring-orbit{opacity:.22!important}
+.svg-ring-orbit-dot{opacity:.55!important;filter:none!important}
+
+/* Unified soft motion. */
+a,button,.primary,.secondary,.ghost,.tiny-btn,.icon-btn,.theme-toggle,
+.panel,.kpi,.headline-kpi,.group-stat-card,.network-stat,.role-card,
+.md-feature,.intervention-card,.graduation-check,.people-chip,.notification-bell,
+.input-shell,input,select,textarea,.nav a,.status,.chip,.badge{
+  transition:
+    transform var(--md-motion) var(--md-ease),
+    box-shadow var(--md-motion) var(--md-ease),
+    border-color var(--md-motion-fast) ease,
+    background-color var(--md-motion-fast) ease,
+    color var(--md-motion-fast) ease,
+    opacity var(--md-motion-fast) ease!important;
+}
+
+/* Panels: cleaner glassless premium surface. */
+.panel,.kpi,.headline-kpi,.group-stat-card,.network-stat,.md-feature,
+.intervention-card,.graduation-check{
+  box-shadow:var(--md-shadow-sm);
+  border-color:#d8e9df!important;
+}
+.panel:hover{box-shadow:var(--md-shadow-md)}
+.kpi:hover,.headline-kpi:hover,.group-stat-card:hover,.network-stat:hover,
+.role-card:hover,.md-feature:hover{
+  transform:translateY(-2px)!important;
+  box-shadow:var(--md-shadow-md)!important;
+}
+
+/* Buttons feel responsive but never jump. */
+.primary,.secondary,.ghost,.tiny-btn,.icon-btn,.theme-toggle{
+  transform:translateZ(0);
+}
+.primary:hover,.secondary:hover,.ghost:hover,.tiny-btn:hover,.icon-btn:hover,.theme-toggle:hover{
+  transform:translateY(-1px)!important;
+}
+.primary:active,.secondary:active,.ghost:active,.tiny-btn:active,.icon-btn:active,.theme-toggle:active{
+  transform:translateY(0) scale(.985)!important;
+  transition-duration:80ms!important;
+}
+
+/* Navigation: premium selection state, no sliding/spring motion. */
+.nav a{border-radius:11px}
+.nav a:hover{transform:none!important}
+.nav a.active{
+  box-shadow:inset 3px 0 0 #159461,0 4px 14px rgba(21,148,97,.06)!important;
+}
+
+/* Inputs: focus communicates state without scale/glow excess. */
+input:focus,select:focus,textarea:focus,
+.input-shell:focus-within{
+  transform:none!important;
+  border-color:#7fcaa5!important;
+  box-shadow:0 0 0 3px rgba(32,153,101,.10)!important;
+  outline:none!important;
+}
+
+/* Search popover and dialogs: restrained reveal. */
+.top-search-results,.modal[open]{
+  animation:mdSoftReveal var(--md-motion) var(--md-ease) both!important;
+}
+@keyframes mdSoftReveal{
+  from{opacity:0;transform:translateY(5px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* Flash messages and newly-rendered content. */
+.flash,.quick-note,.warning-box{
+  animation:mdSoftReveal var(--md-motion-slow) var(--md-ease) both;
+}
+
+/* Progress rings animate only when the value changes. */
+.svg-ring-progress{
+  transition:stroke-dashoffset .55s var(--md-ease),stroke .2s ease!important;
+}
+.ring-value-hit .svg-ring-center{animation:none!important}
+
+/* Cards should never scale; scaling causes text shimmer on Windows/Chrome. */
+.is-action-card:hover,.is-action-card:focus-visible,
+.headline-kpi:hover,.kpi:hover,.network-stat:hover,.group-stat-card:hover{
+  transform:translateY(-2px)!important;
+}
+
+/* Dashboard hierarchy and spacing polish. */
+.content{scroll-behavior:smooth}
+.hero-line,.panel-head{gap:18px}
+.hero-line h1,.panel-head h2,.role-profile-heading h2{
+  letter-spacing:-.02em;
+}
+.eyebrow{
+  letter-spacing:.085em;
+  font-weight:850;
+}
+.kpi strong,.headline-kpi strong{
+  letter-spacing:-.035em;
+}
+.role-card{
+  border:1px solid #dcebe3;
+  background:linear-gradient(180deg,#fff,#fbfefc);
+  box-shadow:0 4px 14px rgba(28,70,51,.045);
+}
+.role-card:hover{
+  border-color:#b9dbc9!important;
+  background:linear-gradient(180deg,#fff,#f6fbf8);
+}
+
+/* Login: calmer, more premium first impression. */
+.login-card{
+  box-shadow:0 24px 70px rgba(20,63,45,.13)!important;
+  border-color:#d6e9df!important;
+}
+.login-feature-grid>div{
+  transition:background-color var(--md-motion-fast) ease,border-color var(--md-motion-fast) ease!important;
+}
+.login-feature-grid>div:hover{
+  transform:none!important;
+  background:rgba(255,255,255,.72)!important;
+}
+.login-submit:hover{transform:translateY(-1px)!important}
+
+/* Table polish. */
+table tbody tr{
+  transition:background-color var(--md-motion-fast) ease!important;
+}
+table tbody tr:hover{
+  transform:none!important;
+  background:#f7fbf9!important;
+}
+html[data-theme="dark"] table tbody tr:hover{background:#123326!important}
+
+/* Dialog polish. */
+dialog.modal{
+  border:1px solid #d7e8df;
+  box-shadow:var(--md-shadow-lg);
+}
+dialog.modal::backdrop{
+  background:rgba(8,25,18,.34);
+  backdrop-filter:blur(3px);
+}
+
+/* Dark mode shadows and surfaces. */
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .kpi,
+html[data-theme="dark"] .headline-kpi,
+html[data-theme="dark"] .group-stat-card,
+html[data-theme="dark"] .network-stat,
+html[data-theme="dark"] .role-card{
+  box-shadow:0 7px 20px rgba(0,0,0,.18);
+}
+html[data-theme="dark"] .role-card{
+  background:linear-gradient(180deg,#102b21,#0e261d);
+  border-color:#28513e;
+}
+
+/* Mobile: almost no motion, maximum responsiveness. */
+@media(max-width:760px){
+  .panel:hover,.kpi:hover,.headline-kpi:hover,.group-stat-card:hover,
+  .network-stat:hover,.role-card:hover,.md-feature:hover{
+    transform:none!important;
+    box-shadow:var(--md-shadow-sm)!important;
+  }
+  body::before{opacity:.15!important}
+}
+
+/* Respect OS accessibility preference. */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.001ms!important;
+    scroll-behavior:auto!important;
+  }
+}
