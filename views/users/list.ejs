@@ -1,15 +1,50 @@
 <%- include('../partials/head') %><%- include('../partials/sidebar') %>
 <div class="app"><%- include('../partials/topbar') %><main class="content">
 <%- include('../partials/flash') %>
-<section class="hero-line compact"><div><span class="eyebrow">FOYDALANUVCHI VAKOLATLARI</span><h1>Foydalanuvchi hisoblari</h1><p>Profil ma’lumotlari, vakolat va xavfsizlik holati nazorat qilinadi. Yangi hisoblar faqat vakolatli xodim tomonidan yaratiladi.</p></div><a class="primary" href="/users/new">+ Hisob yaratish</a></section>
-<% if(currentUser.role==='tech'){ %><section class="quick-note warning-box"><div><b>Yuqori vakolatli hisoblar himoyalangan</b><p>Tizim xodimi rahbariyat profilining xizmat ma’lumotlarini tahrirlashi mumkin, ammo kirish ma’lumotlari va xavfsizlik sozlamalarini ko‘ra olmaydi.</p></div></section><% } %>
-<section class="panel"><div class="table-wrap"><table><thead><tr><th>F.I.Sh.</th><th>Login</th><th>Rol</th><th>Fakultet</th><th>Kafedra</th><th>Holat</th><th>Amal</th></tr></thead><tbody>
-<% users.forEach(u=>{ %><tr><td><div class="table-person"><a href="/profile/<%= u._id %>"><%- include('../partials/avatar', { user:u, size:'xs' }) %></a><div><a class="person-name" href="/profile/<%= u._id %>"><b><%= u.fullName %></b></a><small><%= u.email || u.phone || '—' %></small></div></div></td><td><% if(u.credentialProtected){ %><span class="protected-value">🔒 Himoyalangan</span><% }else{ %><code><%= u.login %></code><% } %></td><td><span class="chip"><%= roleLabels[u.role] || u.role %></span></td><td><%= u.faculty || '—' %></td><td><%= u.department || '—' %></td><td><span class="status <%= u.active ? 'green':'red' %>"><%= u.active ? 'Faol':'Bloklangan' %></span></td><td><div class="row-actions">
-<a class="tiny-btn" href="/profile/<%= u._id %>">Profil</a><% if(u.canEdit){ %><a class="tiny-btn" href="/users/<%= u._id %>/edit">Tahrirlash</a><% } %>
-<% if(u.canSecurity){ %><form method="post" action="/users/<%= u._id %>/toggle"><button class="tiny-btn"><%= u.active ? 'Bloklash':'Faollashtirish' %></button></form><button class="tiny-btn" onclick="document.getElementById('reset-<%= u._id %>').showModal()">Parol</button><% } else if(u.credentialProtected){ %><span class="tiny-lock">🔒 himoyalangan</span><% } %>
-<% if(u.canDelete){ %><form method="post" action="/users/<%= u._id %>/delete" onsubmit="return confirm('Hisobni butunlay o‘chirishni tasdiqlaysizmi?')"><button class="tiny-btn danger-btn">O‘chirish</button></form><% } %>
-</div>
-<% if(u.canSecurity){ %><dialog id="reset-<%= u._id %>" class="modal"><form method="post" action="/users/<%= u._id %>/reset-password"><h3>Parolni tiklash</h3><p><%= u.fullName %> uchun yangi vaqtinchalik parol.</p><input name="password" minlength="8" required placeholder="Yangi parol"><div class="modal-actions"><button type="button" class="ghost" onclick="this.closest('dialog').close()">Bekor</button><button class="primary">Saqlash</button></div></form></dialog><% } %>
-</td></tr><% }) %>
-</tbody></table></div></section>
+<section class="hero-line compact"><div><span class="eyebrow">FOYDALANUVCHI VAKOLATLARI</span><h1>Foydalanuvchi hisoblari</h1><p>Hisoblarni qidiring, filterlang, bloklang yoki vaqtinchalik parol bering.</p></div><a class="primary" href="/users/new">+ Hisob yaratish</a></section>
+<% if(currentUser.role==='tech'){ %><section class="quick-note warning-box"><div><b>Yuqori vakolatli hisoblar himoyalangan</b><p>Tizim xodimi rahbariyat profilining xizmat ma’lumotlarini tahrirlashi mumkin, ammo himoyalangan kirish ma’lumotlarini boshqara olmaydi.</p></div></section><% } %>
+
+<section class="panel">
+  <div class="panel-head"><div><h2>Hisoblar</h2><p><b><%= users.length %></b> ta foydalanuvchi</p></div></div>
+  <div class="form-grid" style="margin-bottom:14px">
+    <label>Qidirish<input id="userSearch" placeholder="F.I.Sh., login, telefon, fakultet..."></label>
+    <label>Rol<select id="roleFilter"><option value="">Barcha rollar</option><% [...new Set(users.map(u=>u.role))].forEach(r=>{ %><option value="<%= r %>"><%= roleLabels[r] || r %></option><% }) %></select></label>
+    <label>Holat<select id="statusFilter"><option value="">Barchasi</option><option value="active">Faol</option><option value="blocked">Bloklangan</option></select></label>
+  </div>
+
+  <div class="table-wrap"><table id="usersTable"><thead><tr><th>F.I.Sh.</th><th>Login</th><th>Rol</th><th>Fakultet</th><th>Kafedra</th><th>Holat</th><th>Amal</th></tr></thead><tbody>
+  <% users.forEach(u=>{ %><tr data-role="<%= u.role %>" data-status="<%= u.active?'active':'blocked' %>" data-search="<%= [u.fullName,u.login,u.email,u.phone,u.faculty,u.department].filter(Boolean).join(' ').toLowerCase() %>">
+    <td><div class="table-person"><a href="/profile/<%= u._id %>"><%- include('../partials/avatar', { user:u, size:'xs' }) %></a><div><a class="person-name" href="/profile/<%= u._id %>"><b><%= u.fullName %></b></a><small><%= u.email || u.phone || '—' %></small></div></div></td>
+    <td><% if(u.credentialProtected){ %><span class="protected-value">🔒 Himoyalangan</span><% }else{ %><code><%= u.login %></code><% } %></td>
+    <td><span class="chip"><%= roleLabels[u.role] || u.role %></span></td>
+    <td><%= u.faculty || '—' %></td><td><%= u.department || '—' %></td>
+    <td><span class="status <%= u.active ? 'green':'red' %>"><%= u.active ? 'Faol':'Bloklangan' %></span></td>
+    <td><div class="row-actions">
+      <a class="tiny-btn" href="/profile/<%= u._id %>">Profil</a>
+      <% if(u.canEdit){ %><a class="tiny-btn" href="/users/<%= u._id %>/edit">Tahrirlash</a><% } %>
+      <% if(u.canSecurity){ %>
+        <form method="post" action="/users/<%= u._id %>/toggle"><button class="tiny-btn"><%= u.active ? 'Bloklash':'Faollashtirish' %></button></form>
+        <button class="tiny-btn" onclick="document.getElementById('reset-<%= u._id %>').showModal()">Parol</button>
+      <% } else if(u.credentialProtected){ %><span class="tiny-lock">🔒 himoyalangan</span><% } %>
+      <% if(u.canDelete){ %><form method="post" action="/users/<%= u._id %>/delete" onsubmit="return confirm('Hisobni butunlay o‘chirishni tasdiqlaysizmi?')"><button class="tiny-btn danger-btn">O‘chirish</button></form><% } %>
+    </div>
+    <% if(u.canSecurity){ %><dialog id="reset-<%= u._id %>" class="modal"><form method="post" action="/users/<%= u._id %>/reset-password"><h3>Vaqtinchalik parol</h3><p><b><%= u.fullName %></b> uchun yangi parol kiriting yoki avtomatik yarating.</p><div class="input-shell"><input id="reset-input-<%= u._id %>" name="password" minlength="8" required placeholder="Kamida 8 belgi"><button type="button" class="tiny-btn" onclick="makeTempPassword('reset-input-<%= u._id %>')">Yaratish</button></div><small>Keyingi kirishda foydalanuvchi yangi parol o‘rnatadi.</small><div class="modal-actions"><button type="button" class="ghost" onclick="this.closest('dialog').close()">Bekor</button><button class="primary">Saqlash</button></div></form></dialog><% } %>
+    </td>
+  </tr><% }) %>
+  </tbody></table></div>
+  <div id="noUsers" class="empty-state" hidden><b>Natija topilmadi</b><p>Qidiruv yoki filterlarni o‘zgartiring.</p></div>
+</section>
+<script>
+function makeTempPassword(id){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#';
+  const arr=new Uint32Array(12);crypto.getRandomValues(arr);
+  document.getElementById(id).value=Array.from(arr,n=>chars[n%chars.length]).join('');
+}
+(() => {
+  const q=document.getElementById('userSearch'), role=document.getElementById('roleFilter'), status=document.getElementById('statusFilter');
+  const rows=[...document.querySelectorAll('#usersTable tbody tr')], empty=document.getElementById('noUsers');
+  const apply=()=>{let shown=0;const needle=(q.value||'').trim().toLowerCase();rows.forEach(row=>{const ok=(!needle||row.dataset.search.includes(needle))&&(!role.value||row.dataset.role===role.value)&&(!status.value||row.dataset.status===status.value);row.hidden=!ok;if(ok)shown++;});empty.hidden=shown>0;};
+  [q,role,status].forEach(el=>el?.addEventListener(el.tagName==='INPUT'?'input':'change',apply));
+})();
+</script>
 </main></div><%- include('../partials/foot') %>
