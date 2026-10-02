@@ -1,5 +1,20 @@
 const User = require('../models/User');
+const Student = require('../models/Student');
 const audit = require('../services/audit');
+
+const normalizePhone = value => String(value || '').replace(/[^0-9+]/g, '');
+const buildLookup = identifier => {
+  const raw = String(identifier || '').trim();
+  const lowered = raw.toLowerCase();
+  const phone = normalizePhone(raw);
+  const or = [
+    { login: lowered },
+    { email: lowered },
+    { employeeId: raw }
+  ];
+  if (phone) or.push({ phone });
+  return { raw, lowered, phone, or };
+};
 
 exports.showLogin = (req, res) => {
   if (req.user) return res.redirect('/dashboard');
@@ -8,18 +23,30 @@ exports.showLogin = (req, res) => {
 
 exports.login = async (req, res, next) => {
   try {
-    const login = String(req.body.login || '').trim().toLowerCase();
+    const identifier = req.body.identifier ?? req.body.login;
     const password = String(req.body.password || '');
-    const user = await User.findOne({ login });
+    const lookup = buildLookup(identifier);
+
+    let user = await User.findOne({ $or: lookup.or });
+    if (!user && lookup.raw) {
+      const student = await Student.findOne({ studentId: lookup.raw }).select('user').lean();
+      if (student?.user) user = await User.findById(student.user);
+    }
+
     if (!user || !user.active || !(await user.verifyPassword(password))) {
-      req.session.flash = { type: 'error', text: 'Login yoki parol noto‘g‘ri.' };
+      req.session.flash = { type: 'error', text: 'Kirish ma’lumoti yoki parol noto‘g‘ri.' };
       return res.redirect('/login');
     }
+
     req.session.userId = user._id.toString();
+    req.session.cookie.maxAge = req.body.remember === '1'
+      ? 1000 * 60 * 60 * 24 * 30
+      : 1000 * 60 * 60 * 10;
+
     user.lastLoginAt = new Date();
     await user.save();
     req.user = user;
-    await audit(req, 'AUTH_LOGIN', 'User', user._id);
+    await audit(req, 'AUTH_LOGIN', 'User', user._id, { remember: req.body.remember === '1' });
     res.redirect('/dashboard');
   } catch (e) { next(e); }
 };
