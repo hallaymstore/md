@@ -1,0 +1,19 @@
+<section class="panel">
+  <div class="panel-head"><div><span class="eyebrow">TEZKOR AMALLAR</span><h2>Bugun nimani qilmoqchisiz?</h2><p>Eng ko‘p ishlatiladigan bo‘limlarga bir bosishda o‘ting.</p></div></div>
+  <div class="role-grid">
+    <% if(['superadmin','tech','magistracy','dean','department'].includes(currentUser.role)){ %>
+      <a class="role-card" href="/users/new"><span><b>+ Hisob yaratish</b><small>Yangi xodim yoki foydalanuvchi</small></span></a>
+      <a class="role-card" href="/users"><span><b>Foydalanuvchilar</b><small>Qidirish, tahrirlash, parol tiklash</small></span></a>
+    <% } %>
+    <% if(['superadmin','tech','magistracy','dean','department','supervisor','teacher'].includes(currentUser.role)){ %>
+      <a class="role-card" href="/students"><span><b>Magistrantlar</b><small>Guruhlar va magistrant profillari</small></span></a>
+    <% } %>
+    <a class="role-card" href="/submissions"><span><b>Ilmiy ishlar</b><small>Ariza, ko‘rib chiqish va tasdiqlash</small></span></a>
+    <a class="role-card" href="/timetable"><span><b>Jadval</b><small>Dars va muhim muddatlarni ko‘rish</small></span></a>
+    <a class="role-card" href="/notifications"><span><b>Bildirishnomalar</b><small>Yangi vazifa va qarorlar</small></span></a>
+    <% if(['superadmin','tech','magistracy','management','dean','department'].includes(currentUser.role)){ %>
+      <a class="role-card" href="/monitoring"><span><b>Monitoring</b><small>Muammo, xavf va nazorat</small></span></a>
+      <a class="role-card" href="/analytics"><span><b>Tahlil</b><small>Ko‘rsatkichlar va dinamika</small></span></a>
+    <% } %>
+  </div>
+</section>
