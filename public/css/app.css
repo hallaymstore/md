@@ -654,3 +654,126 @@ html[data-theme="dark"] .role-card{
     scroll-behavior:auto!important;
   }
 }
+
+
+/* MD v3.5.1 — LEGACY MOTION CLEANUP
+   Disable every legacy infinite decorative animation left by earlier UI versions. */
+.is-action-card::before,
+.group-stat-card::before,
+.live-overview::before,
+.motion-panel::before,.motion-panel::after,
+.kpi::before,.kpi::after,
+.headline-kpi::before,.headline-kpi::after,
+.network-stat::before,.network-stat::after,
+.bucket-grid>div::after,.overview-grid>div::after{
+  animation:none!important;
+}
+
+/* Keep decorative shapes static and subtle. */
+.is-action-card::before,.group-stat-card::before,
+.motion-panel::before,.kpi::before,.headline-kpi::before{
+  opacity:.22!important;
+  transform:none!important;
+}
+.live-overview::before,.motion-panel::after,.kpi::after,.headline-kpi::after{
+  opacity:.10!important;
+  transform:none!important;
+}
+
+.role-avatar::before,
+.percent-token::before,
+.percent-token>span,
+.profile-aura-avatar::before,.profile-aura-avatar::after,
+.profile-editor-avatar::before,.profile-editor-avatar::after,
+.profile-activity-feed article>i,
+.network-stat i,
+.people-chip em,
+.student-live-foot i,
+.live-state i,
+.group-readiness i,
+.mini-progress i,.big-progress i,.metric-bars i,.compare-list i,.triple-progress i,
+.mini-progress i::after,.big-progress i::after{
+  animation:none!important;
+}
+
+/* Avatar: elegant static highlight instead of spinning conic beam. */
+.role-avatar::before{
+  background:linear-gradient(135deg,rgba(255,255,255,.26),transparent 52%)!important;
+  inset:0!important;
+  transform:none!important;
+}
+.profile-aura-avatar::before,.profile-editor-avatar::before{
+  border-style:solid!important;
+  opacity:.55;
+}
+.profile-aura-avatar::after,.profile-editor-avatar::after{opacity:.35}
+
+/* Progress bars: solid premium gradient, no conveyor animation. */
+.mini-progress i,.big-progress i,.metric-bars i,.compare-list i,.triple-progress i,.group-readiness i{
+  background-size:100% 100%!important;
+}
+.mini-progress i::after,.big-progress i::after{content:none!important}
+
+/* Live state uses color, not blinking. */
+.live-state i,.student-live-foot i,.profile-activity-feed article>i{
+  transform:none!important;
+  opacity:1!important;
+  box-shadow:0 0 0 4px rgba(35,169,111,.10)!important;
+}
+
+/* Tiny arrows/icons stay still until hover. */
+.network-stat i,.people-chip em,.profile-visibility-note>span{
+  transform:none!important;
+}
+.people-chip:hover em{transform:translateX(2px)!important}
+.network-stat:hover i{transform:translateY(-1px)!important}
+
+/* Remove background-grid movement completely. */
+body::before{animation:none!important;background-position:0 0!important}
+
+/* Page entrance: one short reveal only, never repeated. */
+.panel,.kpi{
+  animation:mdSoftReveal .20s var(--md-ease) both!important;
+}
+@media(max-width:760px){
+  .panel,.kpi{animation:none!important}
+}
+
+/* Crisp premium surfaces */
+.sidebar{
+  box-shadow:8px 0 32px rgba(30,78,56,.055)!important;
+}
+.topbar{
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  box-shadow:0 1px 0 rgba(38,91,66,.05);
+}
+.content{padding-top:18px!important}
+.panel{
+  border-radius:16px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.99),rgba(251,254,252,.99))!important;
+}
+.kpi,.headline-kpi,.group-stat-card,.network-stat,.role-card{
+  border-radius:14px!important;
+}
+.primary{
+  border:none!important;
+  letter-spacing:.01em;
+}
+.primary:hover{
+  filter:saturate(1.03);
+}
+.icon-btn,.tiny-btn{
+  box-shadow:none!important;
+}
+.top-search{
+  box-shadow:inset 0 1px 2px rgba(23,72,50,.035);
+}
+
+/* Mobile density and touch feel */
+@media(max-width:680px){
+  .content{padding-top:12px!important}
+  .panel{border-radius:14px!important}
+  .primary,.secondary,.ghost{min-height:40px}
+  .tiny-btn,.icon-btn{min-height:34px}
+}
