@@ -109,7 +109,7 @@ async function seedWorkflow(students, actors){
 
 async function run(){
   await mongoose.connect(uri);
-  const adminLogin=process.env.SUPERADMIN_LOGIN||'admin'; const adminPassword=process.env.SUPERADMIN_PASSWORD||'Admin123!';
+  const adminLogin=process.env.SUPERADMIN_LOGIN||'admin'; const adminPassword=process.env.SUPERADMIN_PASSWORD||'admin00';
   let admin=await ensureUser({login:adminLogin,role:'superadmin',fullName:'MD Bosh Administrator',email:'internal@md.local',active:true,mustChangePassword:false},adminPassword);
   // Production deployda SUPERADMIN_PASSWORD berilgan bo‘lsa, mavjud admin parolini ham shu qiymatga sinxronlaymiz.
   if (process.env.SUPERADMIN_PASSWORD) {
